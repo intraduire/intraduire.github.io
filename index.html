@@ -713,7 +713,7 @@
       document.getElementById('index-section').style.display = '';
     }
 
-    // Index : rendu instantané depuis le cache, puis rafraîchissement en fond
+    // Index : rendu instantané depuis le stockage local, puis rafraîchissement en fond
     async function chargerListe() {
       let cached = null;
       try { cached = JSON.parse(localStorage.getItem(LISTE_KEY) || 'null'); } catch (e) {}
