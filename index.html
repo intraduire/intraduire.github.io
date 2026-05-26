@@ -1,268 +1,798 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Intraduire</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+<script>
+  // Thème (clair/sombre) appliqué avant le paint pour éviter le flash
+  (function () {
+    try {
+      var t = localStorage.getItem('intraduire-theme');
+      if (t !== 'dark' && t !== 'light') {
+        t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400;1,6..72,500&family=Amiri:wght@400;700&family=Caveat:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0d0d0d;color:#f0ebe0;font-family:'Crimson Pro',Georgia,serif;min-height:100vh;padding:48px 24px;}
-.wrap{max-width:780px;margin:0 auto;}
-.hdr{text-align:center;margin-bottom:52px;}
-.badge{font-family:'Cairo',sans-serif;font-size:10px;letter-spacing:5px;text-transform:uppercase;color:#c9a84c;opacity:.7;margin-bottom:14px;}
-.titre{font-family:'Playfair Display',serif;font-size:clamp(38px,6vw,58px);font-weight:400;color:#f0ebe0;line-height:1.05;margin-bottom:6px;}
-.titre em{font-style:italic;color:#c9a84c;}
-.sous{font-family:'Crimson Pro',serif;font-size:16px;color:#888;font-style:italic;font-weight:300;}
-.sep{width:56px;height:1px;background:linear-gradient(90deg,transparent,#c9a84c,transparent);margin:24px auto;}
-.source-badge{display:inline-block;padding:4px 12px;border-radius:2px;font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-bottom:20px;}
-.source-cache{background:rgba(40,100,40,.3);color:#7dc07d;border:1px solid rgba(40,100,40,.5);}
-.source-claude{background:rgba(201,168,76,.1);color:#c9a84c;border:1px solid rgba(201,168,76,.3);}
-.card-input{background:rgba(255,255,255,.03);border:1px solid rgba(201,168,76,.2);border-radius:3px;padding:36px;margin-bottom:24px;transition:border-color .3s;}
-.card-input:focus-within{border-color:rgba(201,168,76,.5);}
-.lbl{font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:5px;text-transform:uppercase;color:#c9a84c;opacity:.7;display:block;margin-bottom:18px;}
-.inp{width:100%;background:transparent;border:none;outline:none;font-family:'Cairo',sans-serif;font-size:clamp(30px,5vw,50px);color:#f0ebe0;text-align:center;direction:rtl;caret-color:#c9a84c;}
-.inp::placeholder{color:rgba(240,235,224,.18);font-size:clamp(22px,3.5vw,36px);}
-.hint{text-align:center;font-size:13px;color:#666;margin-top:14px;font-style:italic;}
-.err{padding:20px;border:1px solid rgba(200,80,80,.3);border-radius:3px;color:#e09090;font-style:italic;text-align:center;margin-bottom:20px;display:none;}
-.err.show{display:block;}
-.btn-go{width:100%;padding:17px;background:transparent;border:1px solid #c9a84c;color:#c9a84c;font-family:'Cairo',sans-serif;font-size:11px;letter-spacing:5px;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .3s;margin-bottom:44px;}
-.btn-go:hover:not(:disabled){background:#c9a84c;color:#0d0d0d;}
-.btn-go:disabled{opacity:.4;cursor:not-allowed;}
-.loading{display:none;text-align:center;padding:56px 0;}
-.loading.show{display:block;}
-.ld-mot{font-family:'Cairo',sans-serif;font-size:52px;color:#c9a84c;direction:rtl;animation:pulse 2s ease-in-out infinite;margin-bottom:18px;}
-.ld-txt{font-family:'Crimson Pro',serif;font-size:16px;color:#666;font-style:italic;}
-.ld-sub{font-family:'Cairo',sans-serif;font-size:10px;color:#444;letter-spacing:3px;text-transform:uppercase;margin-top:10px;}
-@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
-.result{display:none;animation:up .5s ease;}
-.result.show{display:block;}
-@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-.mot-big{text-align:center;padding:36px;border:1px solid rgba(201,168,76,.13);border-radius:3px;background:rgba(201,168,76,.03);margin-bottom:44px;}
-.mot-ar{font-family:'Cairo',sans-serif;font-size:clamp(46px,8vw,70px);color:#c9a84c;direction:rtl;margin-bottom:6px;}
-.mot-tr{font-family:'Playfair Display',serif;font-style:italic;font-size:19px;color:#666;}
-.tabs{display:flex;gap:2px;border-bottom:1px solid rgba(201,168,76,.13);margin-bottom:28px;flex-wrap:wrap;}
-.tab{padding:10px 18px;background:transparent;border:none;color:#666;font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
-.tab:hover{color:#e8d5a3;}
-.tab.on{color:#c9a84c;border-bottom-color:#c9a84c;}
-.pane{display:none;}
-.pane.on{display:block;}
-.analyse{line-height:1.95;font-size:17px;color:#f0ebe0;font-weight:300;}
-.analyse h3{font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#c9a84c;margin:34px 0 14px;opacity:.75;}
-.analyse h3:first-child{margin-top:0;}
-.analyse p{margin-bottom:14px;}
-.sig{margin:36px 0;padding:28px 36px;border-left:2px solid #c9a84c;background:rgba(201,168,76,.05);font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(17px,2.5vw,21px);color:#e8d5a3;line-height:1.65;}
-.ques{margin-top:36px;padding:24px 28px;border:1px solid rgba(201,168,76,.18);border-radius:3px;font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:#f0ebe0;text-align:center;background:rgba(201,168,76,.03);}
-.fmt-blk{margin-bottom:36px;border:1px solid rgba(201,168,76,.13);border-radius:3px;overflow:hidden;}
-.fmt-hdr{padding:14px 22px;background:rgba(201,168,76,.07);display:flex;justify-content:space-between;align-items:center;}
-.fmt-nom{font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c9a84c;}
-.btn-cp{padding:5px 14px;background:transparent;border:1px solid rgba(201,168,76,.4);color:#c9a84c;font-family:'Cairo',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;}
-.btn-cp:hover{background:#c9a84c;color:#0d0d0d;}
-.btn-cp.ok{background:#1e3d1e;border-color:#3a6a3a;color:#7dc07d;}
-.fmt-body{padding:24px;font-size:15px;line-height:1.85;color:#f0ebe0;font-weight:300;white-space:pre-wrap;font-family:'Crimson Pro',serif;}
-.btn-new{display:block;width:100%;padding:14px;background:transparent;border:1px solid rgba(201,168,76,.18);color:#666;font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-top:44px;transition:all .3s;}
-.btn-new:hover{border-color:#c9a84c;color:#c9a84c;}
-.liste-section{margin-top:60px;padding-top:32px;border-top:1px solid rgba(201,168,76,.1);}
-.liste-titre{font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#c9a84c;opacity:.6;margin-bottom:20px;}
-.liste-mots{display:flex;flex-wrap:wrap;gap:10px;}
-.mot-tag{padding:8px 16px;border:1px solid rgba(201,168,76,.2);border-radius:2px;font-family:'Cairo',sans-serif;font-size:14px;color:#c9a84c;cursor:pointer;direction:rtl;transition:all .2s;}
-.mot-tag:hover{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.5);}
-.mot-tag span{font-family:'Crimson Pro',serif;font-size:12px;color:#666;direction:ltr;margin-right:6px;}
+  :root {
+    /* Palette « Vélin chaud » */
+    --paper: #efe9d8;
+    --ink: #2b1f15;
+    --ink-2: #4e4338;
+    --muted: #978e80;
+    --accent: #8a3a1f;
+    --paper-2: #e4dcc6;
+    --lettrine-size: 150px;
+    --measure: 38rem;
+    --rule: rgba(26,25,22,0.30);
+  }
+
+  /* ── Vue sombre ─────────────────────────────────────────────── */
+  html[data-theme="dark"] {
+    --paper: #15120d;
+    --ink: #ece4d4;
+    --ink-2: #c9c0ad;
+    --muted: #8c8474;
+    --accent: #c2613a;
+    --paper-2: #211c14;
+    --rule: rgba(236,228,212,0.16);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 18px;
+    line-height: 1.6;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(ellipse 1200px 800px at 20% 10%, rgba(58,56,51,0.045), transparent 60%),
+      radial-gradient(ellipse 900px 700px at 85% 90%, rgba(184,68,46,0.035), transparent 65%);
+    opacity: var(--grain-opacity, 1);
+    transition: opacity 300ms ease;
+  }
+  html[data-theme="dark"] body::before {
+    background-image:
+      radial-gradient(ellipse 1200px 800px at 20% 10%, rgba(236,228,212,0.05), transparent 60%),
+      radial-gradient(ellipse 900px 700px at 85% 90%, rgba(194,97,58,0.06), transparent 65%);
+  }
+
+  body > * { position: relative; z-index: 1; }
+
+  p { text-wrap: pretty; margin: 0 0 1.1em; }
+  h1, h2, h3 { text-wrap: balance; }
+  a { color: inherit; }
+
+  /* Layout shell --------------------------------------------------- */
+
+  .shell {
+    width: 100%;
+    max-width: var(--measure);
+    margin: 0 auto;
+    padding: 56px 28px 80px;
+  }
+
+  /* Screen transitions --------------------------------------------- */
+
+  .screen {
+    opacity: 0;
+    transition: opacity 320ms ease;
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .screen.active {
+    opacity: 1;
+    pointer-events: auto;
+    position: relative;
+  }
+  .stage {
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* ── ACCUEIL ──────────────────────────────────────────────────── */
+
+  .masthead {
+    text-align: center;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin: 8px 0 96px;
+  }
+
+  .mark {
+    display: block;
+    width: 18px;
+    height: 18px;
+    margin: 0 auto 96px;
+    color: var(--muted);
+    opacity: 0.55;
+  }
+
+  .plume {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--ink);
+    padding: 14px 2px 16px;
+    font-family: "Amiri", "Newsreader", serif;
+    font-size: 24px;
+    line-height: 1;
+    text-align: right;
+    direction: rtl;
+    color: var(--ink);
+    outline: none;
+    border-radius: 0;
+    -webkit-appearance: none;
+  }
+  .plume::placeholder { color: var(--muted); opacity: 0.85; font-style: normal; }
+  .plume:focus { border-bottom-color: var(--accent); }
+
+  .plume-hint {
+    margin-top: 10px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .err {
+    display: none;
+    margin-top: 22px;
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--accent);
+    text-align: center;
+    text-wrap: pretty;
+  }
+  .err.show { display: block; }
+
+  .index-head {
+    margin: 88px 0 18px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .toc { list-style: none; padding: 0; margin: 0; }
+  .toc li {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    align-items: baseline;
+    gap: 14px;
+    padding: 18px 2px;
+    border-bottom: 1px dotted var(--rule);
+    cursor: pointer;
+    transition: color 180ms ease;
+  }
+  .toc li:first-child { border-top: 1px dotted var(--rule); }
+  .toc li:hover .toc-translit { color: var(--accent); }
+
+  .toc-num {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+  .toc-translit {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: 19px;
+    color: var(--ink);
+    transition: color 180ms ease;
+  }
+  .toc-ar {
+    font-family: "Amiri", serif;
+    font-size: 24px;
+    line-height: 1;
+    direction: rtl;
+    color: var(--ink);
+  }
+
+  /* ── CHARGEMENT ───────────────────────────────────────────────── */
+
+  .loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 28px;
+    text-align: center;
+  }
+  .loader-arabic {
+    font-family: "Amiri", serif;
+    font-size: 112px;
+    line-height: 1;
+    color: var(--ink);
+    direction: rtl;
+    margin-bottom: 72px;
+    font-weight: 400;
+  }
+  .loader-phrase {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: 19px;
+    color: var(--ink-2);
+    min-height: 1.6em;
+    transition: opacity 400ms ease;
+    max-width: 22em;
+  }
+  .loader-phrase.fading { opacity: 0; }
+  .loader-dots {
+    margin-top: 32px;
+    display: inline-flex;
+    gap: 8px;
+  }
+  .loader-dots span {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--ink);
+    opacity: 0.25;
+    animation: dotpulse 1400ms ease-in-out infinite;
+  }
+  .loader-dots span:nth-child(2) { animation-delay: 180ms; }
+  .loader-dots span:nth-child(3) { animation-delay: 360ms; }
+  @keyframes dotpulse {
+    0%, 100% { opacity: 0.2; transform: translateY(0); }
+    50%      { opacity: 0.75; transform: translateY(-2px); }
+  }
+
+  /* ── ESSAI ─────────────────────────────────────────────────────── */
+
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 1px;
+    width: 0%;
+    background: var(--accent);
+    z-index: 50;
+    transition: width 80ms linear;
+  }
+
+  .essay-back {
+    display: inline-block;
+    margin-bottom: 40px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .essay-back:hover { color: var(--accent); }
+
+  .cache-badge {
+    display: block;
+    margin-bottom: 28px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .cache-badge[hidden] { display: none; }
+
+  .essay-eyebrow {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .title-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 18px;
+    align-items: start;
+    margin: 12px 0 56px;
+  }
+  .lettrine {
+    font-family: "Amiri", serif;
+    font-size: var(--lettrine-size);
+    line-height: 0.82;
+    color: var(--ink);
+    direction: rtl;
+    margin-top: -0.06em;
+    user-select: none;
+  }
+  .title {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(28px, 6vw, 36px);
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+    margin: 0.18em 0 0;
+  }
+  .title em { font-style: italic; }
+
+  .running-head {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 14px;
+    align-items: center;
+    margin: 64px 0 28px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .running-head .rh-rule {
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .section p {
+    color: var(--ink-2);
+    font-size: 17px;
+    line-height: 1.65;
+  }
+  .section p strong {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .section .ar-inline {
+    font-family: "Amiri", serif;
+    font-size: 22px;
+    line-height: 1;
+    direction: rtl;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .section .translit { font-style: italic; }
+
+  /* ── PHRASE SIGNATURE ─────────────────────────────────────────── */
+
+  .signature {
+    margin: 72px -28px 72px;
+    padding: 56px 36px 44px;
+    background: var(--paper-2);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    text-align: center;
+  }
+  .signature-quote {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: clamp(22px, 4.4vw, 26px);
+    line-height: 1.35;
+    color: var(--ink);
+    margin: 0 auto 32px;
+    text-wrap: balance;
+    max-width: 22ch;
+  }
+  .signature-label {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── QUESTION DE CLÔTURE ──────────────────────────────────────── */
+
+  .closing {
+    margin: 96px -28px -80px;
+    padding: 96px 36px 120px;
+    background: var(--ink);
+    color: var(--paper);
+    text-align: left;
+  }
+  .closing-label {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+  .closing-q {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: clamp(22px, 4.6vw, 26px);
+    line-height: 1.4;
+    color: var(--paper);
+    margin: 0;
+    max-width: 20ch;
+    text-wrap: balance;
+  }
+
+  /* ── Reveal animation (essai) ────────────────────────────────── */
+
+  .reveal { opacity: 0; transform: translateY(8px); transition: opacity 520ms ease, transform 520ms ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ── Bascule de thème ───────────────────────────────────────── */
+  .theme-toggle {
+    position: fixed;
+    top: 16px; right: 16px;
+    z-index: 60;
+    width: 34px; height: 34px;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; margin: 0;
+    background: transparent; border: 0; border-radius: 0;
+    color: var(--muted);
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: color 180ms ease;
+  }
+  .theme-toggle:hover { color: var(--accent); }
+  .theme-toggle svg { width: 18px; height: 18px; display: block; }
+  .theme-toggle .icon-sun,
+  .theme-toggle .icon-moon { display: none; }
+  html[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+  html:not([data-theme="dark"]) .theme-toggle .icon-moon { display: block; }
+
+  /* Mobile tightening */
+  @media (max-width: 480px) {
+    .shell { padding: 40px 22px 64px; }
+    .signature, .closing { margin-left: -22px; margin-right: -22px; padding-left: 28px; padding-right: 28px; }
+    .closing { padding: 80px 28px 96px; }
+    :root { --lettrine-size: 104px; }
+    body { font-size: 17px; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="hdr">
-    <div class="badge">Linguistique coranique · Projet éducatif</div>
-    <h1 class="titre"><em>Intra</em>duire</h1>
-    <p class="sous">Retrouver le sens là où la traduction l'a perdu</p>
-    <div class="sep"></div>
-  </div>
 
-  <div id="zone">
-    <div class="card-input">
-      <span class="lbl">Mot arabe à analyser</span>
-      <input id="inp" class="inp" placeholder="اكتب الكلمة هنا" dir="rtl" autocomplete="off" />
-      <p class="hint">ex : الصبر · الريب · التقوى · الإيمان</p>
-    </div>
-    <div class="err" id="err"></div>
-    <button class="btn-go" id="btngo" onclick="go()">✦ &nbsp; Analyser ce mot &nbsp; ✦</button>
+<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Basculer la vue">
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20 14.4A8 8 0 0 1 9.6 4 6.5 6.5 0 1 0 20 14.4Z"/>
+  </svg>
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.1"/>
+    <path d="M12 2.6v2.3 M12 19.1v2.3 M2.6 12h2.3 M19.1 12h2.3 M5.2 5.2l1.6 1.6 M17.2 17.2l1.6 1.6 M18.8 5.2l-1.6 1.6 M6.8 17.2l-1.6 1.6"/>
+  </svg>
+</button>
 
-    <!-- Mots déjà analysés -->
-    <div class="liste-section" id="liste-section" style="display:none;">
-      <div class="liste-titre">Déjà analysés — cliquer pour afficher</div>
-      <div class="liste-mots" id="liste-mots"></div>
-    </div>
-  </div>
+<div class="progress" id="progress"></div>
 
-  <div class="loading" id="ld">
-    <div class="ld-mot" id="ld-mot"></div>
-    <p class="ld-txt" id="ld-txt">Vérification du cache…</p>
-    <p class="ld-sub" id="ld-sub"></p>
-  </div>
+<div class="stage">
 
-  <div class="result" id="res">
-    <div style="text-align:center;">
-      <span class="source-badge" id="source-badge"></span>
-    </div>
-    <div class="mot-big">
-      <div class="mot-ar" id="r-mot"></div>
-      <div class="mot-tr" id="r-tr"></div>
-    </div>
-    <div class="tabs">
-      <button class="tab on" onclick="tab('analyse',this)">Analyse</button>
-      <button class="tab" onclick="tab('insta',this)">Instagram</button>
-      <button class="tab" onclick="tab('reels',this)">Script Reels</button>
-      <button class="tab" onclick="tab('linkedin',this)">LinkedIn</button>
-    </div>
-    <div class="pane on" id="t-analyse"><div class="analyse" id="r-analyse"></div></div>
-    <div class="pane" id="t-insta">
-      <div class="fmt-blk">
-        <div class="fmt-hdr"><span class="fmt-nom">Post Instagram</span><button class="btn-cp" onclick="cp('r-insta',this)">Copier</button></div>
-        <div class="fmt-body" id="r-insta"></div>
+  <!-- ════════════ ACCUEIL ════════════ -->
+  <section class="screen active" id="screen-home" aria-label="Accueil">
+    <div class="shell">
+      <div class="masthead">Intraduire</div>
+
+      <svg class="mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2 L12 22 M2 12 L22 12 M5 5 L19 19 M19 5 L5 19" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+
+      <input
+        class="plume"
+        type="text"
+        id="plume"
+        placeholder="اكتب كلمة…"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Saisir un mot arabe" />
+      <div class="plume-hint">Entrée pour lire</div>
+
+      <div class="err" id="err"></div>
+
+      <div id="index-section" style="display:none">
+        <div class="index-head">
+          <span id="index-count">Index</span>
+          <span>أ</span>
+        </div>
+        <ul class="toc" id="toc"></ul>
       </div>
     </div>
-    <div class="pane" id="t-reels">
-      <div class="fmt-blk">
-        <div class="fmt-hdr"><span class="fmt-nom">Script Reels · 45 sec</span><button class="btn-cp" onclick="cp('r-reels',this)">Copier</button></div>
-        <div class="fmt-body" id="r-reels"></div>
-      </div>
+  </section>
+
+  <!-- ════════════ CHARGEMENT ════════════ -->
+  <section class="screen" id="screen-loading" aria-label="Chargement">
+    <div class="loader">
+      <div class="loader-arabic" id="loader-ar"></div>
+      <div class="loader-phrase" id="loader-phrase">— Vérification du cache —</div>
+      <div class="loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
-    <div class="pane" id="t-linkedin">
-      <div class="fmt-blk">
-        <div class="fmt-hdr"><span class="fmt-nom">Article LinkedIn</span><button class="btn-cp" onclick="cp('r-linkedin',this)">Copier</button></div>
-        <div class="fmt-body" id="r-linkedin"></div>
-      </div>
+  </section>
+
+  <!-- ════════════ RÉSULTAT — ESSAI ════════════ -->
+  <section class="screen" id="screen-essay" aria-label="Essai">
+    <div class="shell">
+
+      <a class="essay-back" id="back-link">← Intraduire</a>
+
+      <span class="cache-badge reveal" id="cache-badge" hidden>✓ depuis le cache</span>
+      <div class="essay-eyebrow reveal" id="ess-eyebrow"></div>
+
+      <header class="title-row reveal">
+        <div class="lettrine" id="ess-lettrine" aria-hidden="true"></div>
+        <h1 class="title"><em id="ess-title"></em></h1>
+      </header>
+
+      <article id="ess-article"></article>
     </div>
-    <button class="btn-new" onclick="reset()">← Analyser un autre mot</button>
-  </div>
+  </section>
+
 </div>
 
+<!-- Flow controller (vanilla) — backend repris de intraduire-agent.html -->
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyhULOL3wTyOwH91js8E8IKcaPwQegoQmPu5cFQUrvFgkDt2RBOYtr0xliJOXXEUOtwvg/exec";
+  (function () {
+    // Endpoint Google Apps Script (web app public, déjà déployé) — repris tel quel
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyhULOL3wTyOwH91js8E8IKcaPwQegoQmPu5cFQUrvFgkDt2RBOYtr0xliJOXXEUOtwvg/exec";
 
-// Charger la liste des mots au démarrage
-window.addEventListener('load', chargerListe);
-
-async function chargerListe() {
-  try {
-    const r = await fetch(GAS_URL + "?action=liste");
-    const d = await r.json();
-    if (d.success && d.data.length > 0) {
-      afficherListe(d.data);
-    }
-  } catch(e) {
-    console.log("Liste non disponible", e);
-  }
-}
-
-function afficherListe(mots) {
-  const section = document.getElementById('liste-section');
-  const container = document.getElementById('liste-mots');
-  container.innerHTML = '';
-  mots.forEach(m => {
-    const tag = document.createElement('div');
-    tag.className = 'mot-tag';
-    tag.innerHTML = `<span>${m.translitteration}</span>${m.mot}`;
-    tag.onclick = () => {
-      document.getElementById('inp').value = m.mot;
-      go();
+    const screens = {
+      home: document.getElementById('screen-home'),
+      loading: document.getElementById('screen-loading'),
+      essay: document.getElementById('screen-essay'),
     };
-    container.appendChild(tag);
-  });
-  section.style.display = 'block';
-}
+    const plume = document.getElementById('plume');
+    const errEl = document.getElementById('err');
+    const loaderAr = document.getElementById('loader-ar');
+    const loaderPhrase = document.getElementById('loader-phrase');
 
-async function go() {
-  const mot = document.getElementById('inp').value.trim();
-  if (!mot) { showErr('Veuillez saisir un mot arabe.'); return; }
-  hideErr();
-  document.getElementById('btngo').disabled = true;
-  document.getElementById('ld-mot').textContent = mot;
-  document.getElementById('ld-txt').textContent = 'Vérification du cache…';
-  document.getElementById('ld-sub').textContent = '';
-  document.getElementById('ld').classList.add('show');
-  document.getElementById('zone').style.display = 'none';
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    const esc = (s) => String(s == null ? '' : s)
+      .replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  try {
-    const r = await fetch(`${GAS_URL}?action=analyser&mot=${encodeURIComponent(mot)}`);
-    const d = await r.json();
-    if (!d.success) throw new Error(d.error || 'Erreur inconnue');
+    function show(name) {
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      screens[name].classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    }
+    function showErr(m) { errEl.textContent = m; errEl.classList.add('show'); }
+    function hideErr() { errEl.classList.remove('show'); errEl.textContent = ''; }
 
-    const data = d.data;
-
-    // Badge source
-    const badge = document.getElementById('source-badge');
-    if (data._source === 'cache') {
-      badge.textContent = '✓ Depuis le cache';
-      badge.className = 'source-badge source-cache';
-    } else {
-      badge.textContent = '';
-      badge.className = '';
+    // ── Index des mots déjà analysés (action=liste) ─────────────
+    async function chargerListe() {
+      try {
+        const r = await fetch(GAS_URL + "?action=liste");
+        const d = await r.json();
+        if (d.success && Array.isArray(d.data) && d.data.length > 0) renderTOC(d.data);
+        else document.getElementById('index-section').style.display = 'none';
+      } catch (e) {
+        document.getElementById('index-section').style.display = 'none';
+      }
+    }
+    function renderTOC(mots) {
+      const ul = document.getElementById('toc');
+      ul.innerHTML = '';
+      mots.forEach((m, i) => {
+        const li = document.createElement('li');
+        li.innerHTML =
+          `<span class="toc-num">${String(i + 1).padStart(2, '0')}</span>` +
+          `<span class="toc-translit">${esc(m.translitteration)}</span>` +
+          `<span class="toc-ar">${esc(m.mot)}</span>`;
+        li.addEventListener('click', () => startFlow(m.mot));
+        ul.appendChild(li);
+      });
+      document.getElementById('index-count').textContent =
+        `Index — ${mots.length} mot${mots.length > 1 ? 's' : ''}`;
+      document.getElementById('index-section').style.display = '';
     }
 
-    document.getElementById('r-mot').textContent = mot;
-    document.getElementById('r-tr').textContent = data.translitteration || '';
-    document.getElementById('r-analyse').innerHTML = buildAnalyse(data);
-    document.getElementById('r-insta').textContent = data.instagram || '';
-    document.getElementById('r-reels').textContent = data.reels || '';
-    document.getElementById('r-linkedin').textContent = data.linkedin || '';
+    // ── Phrases de chargement (défilent jusqu'à la réponse) ─────
+    const phrases = [
+      '— Vérification du cache —',
+      '— Lecture de la racine —',
+      '— Mise en contexte —',
+      '— Recueil des nuances —',
+      '— Polissage —'
+    ];
+    let phraseTimer = null;
+    function startPhrases() {
+      let i = 0;
+      loaderPhrase.textContent = phrases[0];
+      loaderPhrase.classList.remove('fading');
+      phraseTimer = setInterval(() => {
+        if (i >= phrases.length - 1) return; // tient sur la dernière phrase
+        loaderPhrase.classList.add('fading');
+        setTimeout(() => {
+          i++;
+          loaderPhrase.textContent = phrases[i];
+          loaderPhrase.classList.remove('fading');
+        }, 300);
+      }, 1700);
+    }
+    function stopPhrases() { clearInterval(phraseTimer); phraseTimer = null; }
 
-    document.getElementById('ld').classList.remove('show');
-    document.getElementById('res').classList.add('show');
+    // ── Construction de l'essai depuis les données backend ──────
+    const SECTIONS = [
+      ['racine', 'Racine étymologique'],
+      ['periodisation', 'Périodisation de la révélation'],
+      ['coranique', 'Contexte coranique'],
+      ['prophetique', 'Usage prophétique'],
+      ['faux_amis', 'Faux amis français'],
+      ['autres', 'Autres mots insuffisants'],
+      ['antonyme', 'Antonyme coranique'],
+      ['sensation', 'Sensation physique'],
+      ['traduction', 'Traduction juste'],
+    ];
+    const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
-    // Rafraîchir la liste
+    const paras = (txt) => String(txt).split(/\n+/).map(s => s.trim())
+      .filter(Boolean).map(s => `<p>${esc(s)}</p>`).join('');
+
+    function sectionHTML(roman, label, text) {
+      return `<section class="section reveal">
+        <div class="running-head"><span>${roman} · ${esc(label)}</span><span class="rh-rule"></span></div>
+        ${paras(text)}
+      </section>`;
+    }
+    function signatureHTML(sig) {
+      return `<aside class="signature reveal" aria-label="Phrase signature">
+        <p class="signature-quote">${esc(sig)}</p>
+        <div class="signature-label">Phrase signature</div>
+      </aside>`;
+    }
+    function closingHTML(q) {
+      return `<aside class="closing reveal" aria-label="Question de clôture">
+        <div class="closing-label">Et toi —</div>
+        <p class="closing-q">${esc(q)}</p>
+      </aside>`;
+    }
+
+    function buildEssay(data, mot) {
+      const tr = data.translitteration || '';
+      document.getElementById('ess-eyebrow').textContent = `Intraduire · ${tr || mot}`;
+      document.getElementById('ess-lettrine').textContent = Array.from(mot)[0] || '';
+      document.getElementById('ess-title').textContent = tr || mot;
+
+      const badge = document.getElementById('cache-badge');
+      badge.hidden = data._source !== 'cache';
+
+      const present = SECTIONS.filter(([k]) => data[k] && String(data[k]).trim());
+      const hasAntonyme = present.some(([k]) => k === 'antonyme');
+      const parts = [];
+      let n = 0;
+      present.forEach(([k, label]) => {
+        // La phrase signature casse le rythme juste avant l'antonyme
+        if (k === 'antonyme' && data.signature) parts.push(signatureHTML(data.signature));
+        n++;
+        parts.push(sectionHTML(ROMAN[n - 1] || String(n), label, data[k]));
+      });
+      if (data.signature && !hasAntonyme) parts.push(signatureHTML(data.signature));
+      if (data.question && String(data.question).trim()) parts.push(closingHTML(data.question));
+
+      document.getElementById('ess-article').innerHTML = parts.join('');
+    }
+
+    // ── Révélation en cascade ───────────────────────────────────
+    function revealEssay() {
+      document.querySelectorAll('#screen-essay .reveal').forEach((el, i) => {
+        if (el.hidden) return;
+        setTimeout(() => el.classList.add('in'), 60 + i * 70);
+      });
+    }
+    function resetEssayReveal() {
+      document.querySelectorAll('#screen-essay .reveal').forEach(el => el.classList.remove('in'));
+    }
+
+    // ── Flow principal : saisie → chargement → essai ────────────
+    async function startFlow(mot) {
+      mot = (mot || '').trim();
+      if (!mot) { showErr('Veuillez saisir un mot arabe.'); return; }
+      hideErr();
+
+      loaderAr.textContent = mot;
+      show('loading');
+      startPhrases();
+      const started = Date.now();
+
+      let data = null, error = null;
+      try {
+        const r = await fetch(`${GAS_URL}?action=analyser&mot=${encodeURIComponent(mot)}`);
+        const d = await r.json();
+        if (!d.success) throw new Error(d.error || 'Erreur inconnue');
+        data = d.data;
+      } catch (e) {
+        error = e;
+      }
+
+      stopPhrases();
+      // garde-fou : durée minimale pour éviter le flash quand c'est en cache
+      const wait = Math.max(0, 900 - (Date.now() - started));
+      if (wait) await sleep(wait);
+
+      if (error) {
+        show('home');
+        showErr('Erreur : ' + error.message + '. Vérifiez que le Apps Script est bien déployé.');
+        return;
+      }
+
+      buildEssay(data, mot);
+      resetEssayReveal();
+      show('essay');
+      requestAnimationFrame(() => requestAnimationFrame(revealEssay));
+      chargerListe(); // un nouveau mot a pu être ajouté à l'index
+    }
+
+    // ── Écouteurs ───────────────────────────────────────────────
+    plume.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); startFlow(plume.value); }
+    });
+
+    document.getElementById('back-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      stopPhrases();
+      show('home');
+      hideErr();
+      plume.value = '';
+      plume.focus();
+    });
+
+    // ── Barre de progression de lecture ────────────────────────
+    const progress = document.getElementById('progress');
+    function updateProgress() {
+      if (!screens.essay.classList.contains('active')) { progress.style.width = '0%'; return; }
+      const doc = document.documentElement;
+      const scrollTop = window.scrollY || doc.scrollTop;
+      const max = (doc.scrollHeight - doc.clientHeight);
+      const pct = max > 0 ? Math.min(100, (scrollTop / max) * 100) : 0;
+      progress.style.width = pct.toFixed(2) + '%';
+    }
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress);
+
+    // ── Bascule de thème (clair / sombre) ───────────────────────
+    const docEl = document.documentElement;
+    const themeBtn = document.getElementById('theme-toggle');
+    function syncTheme() {
+      const dark = docEl.getAttribute('data-theme') === 'dark';
+      themeBtn.setAttribute('aria-label', dark ? 'Passer en vue claire' : 'Passer en vue sombre');
+      themeBtn.setAttribute('aria-pressed', String(dark));
+    }
+    themeBtn.addEventListener('click', () => {
+      const next = docEl.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      docEl.setAttribute('data-theme', next);
+      try { localStorage.setItem('intraduire-theme', next); } catch (e) {}
+      syncTheme();
+    });
+    syncTheme();
+
+    // ── Init ────────────────────────────────────────────────────
     chargerListe();
-
-  } catch(e) {
-    document.getElementById('ld').classList.remove('show');
-    document.getElementById('zone').style.display = 'block';
-    document.getElementById('btngo').disabled = false;
-    showErr('Erreur : ' + e.message + '. Vérifiez que le Apps Script est bien déployé.');
-  }
-}
-
-function buildAnalyse(d) {
-  const s = (titre, cle) => d[cle] ? `<h3>${titre}</h3><p>${d[cle].replace(/\n/g,'</p><p>')}</p>` : '';
-  return s('La Racine','racine')
-    + s('Le Contexte Coranique','coranique')
-    + s("L'Usage Prophétique",'prophetique')
-    + s('Les Faux Amis','faux_amis')
-    + s('Autres Mots Insuffisants','autres')
-    + s("L'Antonyme Coranique",'antonyme')
-    + s('La Sensation Physique','sensation')
-    + s('La Traduction Juste','traduction')
-    + (d.signature ? `<div class="sig">${d.signature}</div>` : '')
-    + (d.question ? `<div class="ques">❝ ${d.question} ❞</div>` : '');
-}
-
-function tab(id, btn) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
-  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('t-' + id).classList.add('on');
-}
-
-function cp(id, btn) {
-  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
-    btn.textContent = '✓ Copié';
-    btn.classList.add('ok');
-    setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('ok'); }, 2000);
-  });
-}
-
-function reset() {
-  document.getElementById('res').classList.remove('show');
-  document.getElementById('zone').style.display = 'block';
-  document.getElementById('btngo').disabled = false;
-  document.getElementById('inp').value = '';
-  document.getElementById('inp').focus();
-  tab('analyse', document.querySelector('.tab'));
-}
-
-function showErr(m) { const e = document.getElementById('err'); e.textContent = m; e.classList.add('show'); }
-function hideErr() { document.getElementById('err').classList.remove('show'); }
-document.getElementById('inp').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  })();
 </script>
+
 </body>
 </html>

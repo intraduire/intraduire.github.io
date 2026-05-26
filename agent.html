@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intraduire</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0d0d0d;color:#f0ebe0;font-family:'Crimson Pro',Georgia,serif;min-height:100vh;padding:48px 24px;}
+.wrap{max-width:780px;margin:0 auto;}
+.hdr{text-align:center;margin-bottom:52px;}
+.badge{font-family:'Cairo',sans-serif;font-size:10px;letter-spacing:5px;text-transform:uppercase;color:#c9a84c;opacity:.7;margin-bottom:14px;}
+.titre{font-family:'Playfair Display',serif;font-size:clamp(38px,6vw,58px);font-weight:400;color:#f0ebe0;line-height:1.05;margin-bottom:6px;}
+.titre em{font-style:italic;color:#c9a84c;}
+.sous{font-family:'Crimson Pro',serif;font-size:16px;color:#888;font-style:italic;font-weight:300;}
+.sep{width:56px;height:1px;background:linear-gradient(90deg,transparent,#c9a84c,transparent);margin:24px auto;}
+.source-badge{display:inline-block;padding:4px 12px;border-radius:2px;font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-bottom:20px;}
+.source-cache{background:rgba(40,100,40,.3);color:#7dc07d;border:1px solid rgba(40,100,40,.5);}
+.source-claude{background:rgba(201,168,76,.1);color:#c9a84c;border:1px solid rgba(201,168,76,.3);}
+.card-input{background:rgba(255,255,255,.03);border:1px solid rgba(201,168,76,.2);border-radius:3px;padding:36px;margin-bottom:24px;transition:border-color .3s;}
+.card-input:focus-within{border-color:rgba(201,168,76,.5);}
+.lbl{font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:5px;text-transform:uppercase;color:#c9a84c;opacity:.7;display:block;margin-bottom:18px;}
+.inp{width:100%;background:transparent;border:none;outline:none;font-family:'Cairo',sans-serif;font-size:clamp(30px,5vw,50px);color:#f0ebe0;text-align:center;direction:rtl;caret-color:#c9a84c;}
+.inp::placeholder{color:rgba(240,235,224,.18);font-size:clamp(22px,3.5vw,36px);}
+.hint{text-align:center;font-size:13px;color:#666;margin-top:14px;font-style:italic;}
+.err{padding:20px;border:1px solid rgba(200,80,80,.3);border-radius:3px;color:#e09090;font-style:italic;text-align:center;margin-bottom:20px;display:none;}
+.err.show{display:block;}
+.btn-go{width:100%;padding:17px;background:transparent;border:1px solid #c9a84c;color:#c9a84c;font-family:'Cairo',sans-serif;font-size:11px;letter-spacing:5px;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .3s;margin-bottom:44px;}
+.btn-go:hover:not(:disabled){background:#c9a84c;color:#0d0d0d;}
+.btn-go:disabled{opacity:.4;cursor:not-allowed;}
+.loading{display:none;text-align:center;padding:56px 0;}
+.loading.show{display:block;}
+.ld-mot{font-family:'Cairo',sans-serif;font-size:52px;color:#c9a84c;direction:rtl;animation:pulse 2s ease-in-out infinite;margin-bottom:18px;}
+.ld-txt{font-family:'Crimson Pro',serif;font-size:16px;color:#666;font-style:italic;}
+.ld-sub{font-family:'Cairo',sans-serif;font-size:10px;color:#444;letter-spacing:3px;text-transform:uppercase;margin-top:10px;}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.result{display:none;animation:up .5s ease;}
+.result.show{display:block;}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.mot-big{text-align:center;padding:36px;border:1px solid rgba(201,168,76,.13);border-radius:3px;background:rgba(201,168,76,.03);margin-bottom:44px;}
+.mot-ar{font-family:'Cairo',sans-serif;font-size:clamp(46px,8vw,70px);color:#c9a84c;direction:rtl;margin-bottom:6px;}
+.mot-tr{font-family:'Playfair Display',serif;font-style:italic;font-size:19px;color:#666;}
+.tabs{display:flex;gap:2px;border-bottom:1px solid rgba(201,168,76,.13);margin-bottom:28px;flex-wrap:wrap;}
+.tab{padding:10px 18px;background:transparent;border:none;color:#666;font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
+.tab:hover{color:#e8d5a3;}
+.tab.on{color:#c9a84c;border-bottom-color:#c9a84c;}
+.pane{display:none;}
+.pane.on{display:block;}
+.analyse{line-height:1.95;font-size:17px;color:#f0ebe0;font-weight:300;}
+.analyse h3{font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#c9a84c;margin:34px 0 14px;opacity:.75;}
+.analyse h3:first-child{margin-top:0;}
+.analyse p{margin-bottom:14px;}
+.sig{margin:36px 0;padding:28px 36px;border-left:2px solid #c9a84c;background:rgba(201,168,76,.05);font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(17px,2.5vw,21px);color:#e8d5a3;line-height:1.65;}
+.ques{margin-top:36px;padding:24px 28px;border:1px solid rgba(201,168,76,.18);border-radius:3px;font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:#f0ebe0;text-align:center;background:rgba(201,168,76,.03);}
+.fmt-blk{margin-bottom:36px;border:1px solid rgba(201,168,76,.13);border-radius:3px;overflow:hidden;}
+.fmt-hdr{padding:14px 22px;background:rgba(201,168,76,.07);display:flex;justify-content:space-between;align-items:center;}
+.fmt-nom{font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#c9a84c;}
+.btn-cp{padding:5px 14px;background:transparent;border:1px solid rgba(201,168,76,.4);color:#c9a84c;font-family:'Cairo',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;}
+.btn-cp:hover{background:#c9a84c;color:#0d0d0d;}
+.btn-cp.ok{background:#1e3d1e;border-color:#3a6a3a;color:#7dc07d;}
+.fmt-body{padding:24px;font-size:15px;line-height:1.85;color:#f0ebe0;font-weight:300;white-space:pre-wrap;font-family:'Crimson Pro',serif;}
+.btn-new{display:block;width:100%;padding:14px;background:transparent;border:1px solid rgba(201,168,76,.18);color:#666;font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;border-radius:2px;margin-top:44px;transition:all .3s;}
+.btn-new:hover{border-color:#c9a84c;color:#c9a84c;}
+.liste-section{margin-top:60px;padding-top:32px;border-top:1px solid rgba(201,168,76,.1);}
+.liste-titre{font-family:'Cairo',sans-serif;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#c9a84c;opacity:.6;margin-bottom:20px;}
+.liste-mots{display:flex;flex-wrap:wrap;gap:10px;}
+.mot-tag{padding:8px 16px;border:1px solid rgba(201,168,76,.2);border-radius:2px;font-family:'Cairo',sans-serif;font-size:14px;color:#c9a84c;cursor:pointer;direction:rtl;transition:all .2s;}
+.mot-tag:hover{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.5);}
+.mot-tag span{font-family:'Crimson Pro',serif;font-size:12px;color:#666;direction:ltr;margin-right:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div class="badge">Linguistique coranique · Projet éducatif</div>
+    <h1 class="titre"><em>Intra</em>duire</h1>
+    <p class="sous">Retrouver le sens là où la traduction l'a perdu</p>
+    <div class="sep"></div>
+  </div>
+
+  <div id="zone">
+    <div class="card-input">
+      <span class="lbl">Mot arabe à analyser</span>
+      <input id="inp" class="inp" placeholder="اكتب الكلمة هنا" dir="rtl" autocomplete="off" />
+      <p class="hint">ex : الصبر · الريب · التقوى · الإيمان</p>
+    </div>
+    <div class="err" id="err"></div>
+    <button class="btn-go" id="btngo" onclick="go()">✦ &nbsp; Analyser ce mot &nbsp; ✦</button>
+
+    <!-- Mots déjà analysés -->
+    <div class="liste-section" id="liste-section" style="display:none;">
+      <div class="liste-titre">Déjà analysés — cliquer pour afficher</div>
+      <div class="liste-mots" id="liste-mots"></div>
+    </div>
+  </div>
+
+  <div class="loading" id="ld">
+    <div class="ld-mot" id="ld-mot"></div>
+    <p class="ld-txt" id="ld-txt">Vérification du cache…</p>
+    <p class="ld-sub" id="ld-sub"></p>
+  </div>
+
+  <div class="result" id="res">
+    <div style="text-align:center;">
+      <span class="source-badge" id="source-badge"></span>
+    </div>
+    <div class="mot-big">
+      <div class="mot-ar" id="r-mot"></div>
+      <div class="mot-tr" id="r-tr"></div>
+    </div>
+    <div class="tabs">
+      <button class="tab on" onclick="tab('analyse',this)">Analyse</button>
+      <button class="tab" onclick="tab('insta',this)">Instagram</button>
+      <button class="tab" onclick="tab('reels',this)">Script Reels</button>
+      <button class="tab" onclick="tab('linkedin',this)">LinkedIn</button>
+    </div>
+    <div class="pane on" id="t-analyse"><div class="analyse" id="r-analyse"></div></div>
+    <div class="pane" id="t-insta">
+      <div class="fmt-blk">
+        <div class="fmt-hdr"><span class="fmt-nom">Post Instagram</span><button class="btn-cp" onclick="cp('r-insta',this)">Copier</button></div>
+        <div class="fmt-body" id="r-insta"></div>
+      </div>
+    </div>
+    <div class="pane" id="t-reels">
+      <div class="fmt-blk">
+        <div class="fmt-hdr"><span class="fmt-nom">Script Reels · 45 sec</span><button class="btn-cp" onclick="cp('r-reels',this)">Copier</button></div>
+        <div class="fmt-body" id="r-reels"></div>
+      </div>
+    </div>
+    <div class="pane" id="t-linkedin">
+      <div class="fmt-blk">
+        <div class="fmt-hdr"><span class="fmt-nom">Article LinkedIn</span><button class="btn-cp" onclick="cp('r-linkedin',this)">Copier</button></div>
+        <div class="fmt-body" id="r-linkedin"></div>
+      </div>
+    </div>
+    <button class="btn-new" onclick="reset()">← Analyser un autre mot</button>
+  </div>
+</div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyhULOL3wTyOwH91js8E8IKcaPwQegoQmPu5cFQUrvFgkDt2RBOYtr0xliJOXXEUOtwvg/exec";
+
+// Charger la liste des mots au démarrage
+window.addEventListener('load', chargerListe);
+
+async function chargerListe() {
+  try {
+    const r = await fetch(GAS_URL + "?action=liste");
+    const d = await r.json();
+    if (d.success && d.data.length > 0) {
+      afficherListe(d.data);
+    }
+  } catch(e) {
+    console.log("Liste non disponible", e);
+  }
+}
+
+function afficherListe(mots) {
+  const section = document.getElementById('liste-section');
+  const container = document.getElementById('liste-mots');
+  container.innerHTML = '';
+  mots.forEach(m => {
+    const tag = document.createElement('div');
+    tag.className = 'mot-tag';
+    tag.innerHTML = `<span>${m.translitteration}</span>${m.mot}`;
+    tag.onclick = () => {
+      document.getElementById('inp').value = m.mot;
+      go();
+    };
+    container.appendChild(tag);
+  });
+  section.style.display = 'block';
+}
+
+async function go() {
+  const mot = document.getElementById('inp').value.trim();
+  if (!mot) { showErr('Veuillez saisir un mot arabe.'); return; }
+  hideErr();
+  document.getElementById('btngo').disabled = true;
+  document.getElementById('ld-mot').textContent = mot;
+  document.getElementById('ld-txt').textContent = 'Vérification du cache…';
+  document.getElementById('ld-sub').textContent = '';
+  document.getElementById('ld').classList.add('show');
+  document.getElementById('zone').style.display = 'none';
+
+  try {
+    const r = await fetch(`${GAS_URL}?action=analyser&mot=${encodeURIComponent(mot)}`);
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Erreur inconnue');
+
+    const data = d.data;
+
+    // Badge source
+    const badge = document.getElementById('source-badge');
+    if (data._source === 'cache') {
+      badge.textContent = '✓ Depuis le cache';
+      badge.className = 'source-badge source-cache';
+    } else {
+      badge.textContent = '';
+      badge.className = '';
+    }
+
+    document.getElementById('r-mot').textContent = mot;
+    document.getElementById('r-tr').textContent = data.translitteration || '';
+    document.getElementById('r-analyse').innerHTML = buildAnalyse(data);
+    document.getElementById('r-insta').textContent = data.instagram || '';
+    document.getElementById('r-reels').textContent = data.reels || '';
+    document.getElementById('r-linkedin').textContent = data.linkedin || '';
+
+    document.getElementById('ld').classList.remove('show');
+    document.getElementById('res').classList.add('show');
+
+    // Rafraîchir la liste
+    chargerListe();
+
+  } catch(e) {
+    document.getElementById('ld').classList.remove('show');
+    document.getElementById('zone').style.display = 'block';
+    document.getElementById('btngo').disabled = false;
+    showErr('Erreur : ' + e.message + '. Vérifiez que le Apps Script est bien déployé.');
+  }
+}
+
+function buildAnalyse(d) {
+  const s = (titre, cle) => d[cle] ? `<h3>${titre}</h3><p>${d[cle].replace(/\n/g,'</p><p>')}</p>` : '';
+  return s('La Racine','racine')
+    + s('Le Contexte Coranique','coranique')
+    + s("L'Usage Prophétique",'prophetique')
+    + s('Les Faux Amis','faux_amis')
+    + s('Autres Mots Insuffisants','autres')
+    + s("L'Antonyme Coranique",'antonyme')
+    + s('La Sensation Physique','sensation')
+    + s('La Traduction Juste','traduction')
+    + (d.signature ? `<div class="sig">${d.signature}</div>` : '')
+    + (d.question ? `<div class="ques">❝ ${d.question} ❞</div>` : '');
+}
+
+function tab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('t-' + id).classList.add('on');
+}
+
+function cp(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    btn.textContent = '✓ Copié';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+function reset() {
+  document.getElementById('res').classList.remove('show');
+  document.getElementById('zone').style.display = 'block';
+  document.getElementById('btngo').disabled = false;
+  document.getElementById('inp').value = '';
+  document.getElementById('inp').focus();
+  tab('analyse', document.querySelector('.tab'));
+}
+
+function showErr(m) { const e = document.getElementById('err'); e.textContent = m; e.classList.add('show'); }
+function hideErr() { document.getElementById('err').classList.remove('show'); }
+document.getElementById('inp').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+</script>
+</body>
+</html>
