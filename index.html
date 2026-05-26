@@ -262,6 +262,14 @@
     direction: rtl;
     color: var(--ink);
   }
+  .toc li.toc-loading {
+    display: block;
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--muted);
+    cursor: default;
+  }
 
   /* ── CHARGEMENT ───────────────────────────────────────────────── */
 
@@ -648,14 +656,35 @@
     function hideErr() { errEl.classList.remove('show'); errEl.textContent = ''; }
 
     // ── Index des mots déjà analysés (action=liste) ─────────────
+    const LISTE_KEY = 'intraduire-liste';
+
+    function showIndexLoading() {
+      document.getElementById('toc').innerHTML =
+        '<li class="toc-loading" aria-disabled="true">chargement de l’index…</li>';
+      document.getElementById('index-count').textContent = 'Index';
+      document.getElementById('index-section').style.display = '';
+    }
+
+    // Index : rendu instantané depuis le cache, puis rafraîchissement en fond
     async function chargerListe() {
+      let cached = null;
+      try { cached = JSON.parse(localStorage.getItem(LISTE_KEY) || 'null'); } catch (e) {}
+      const hasCache = Array.isArray(cached) && cached.length > 0;
+      if (hasCache) renderTOC(cached);
+      else showIndexLoading();
+
       try {
         const r = await fetch(GAS_URL + "?action=liste");
         const d = await r.json();
-        if (d.success && Array.isArray(d.data) && d.data.length > 0) renderTOC(d.data);
-        else document.getElementById('index-section').style.display = 'none';
+        if (d.success && Array.isArray(d.data) && d.data.length > 0) {
+          const slim = d.data.map(m => ({ mot: m.mot, translitteration: m.translitteration }));
+          try { localStorage.setItem(LISTE_KEY, JSON.stringify(slim)); } catch (e) {}
+          renderTOC(slim);
+        } else if (!hasCache) {
+          document.getElementById('index-section').style.display = 'none';
+        }
       } catch (e) {
-        document.getElementById('index-section').style.display = 'none';
+        if (!hasCache) document.getElementById('index-section').style.display = 'none';
       }
     }
     function renderTOC(mots) {
