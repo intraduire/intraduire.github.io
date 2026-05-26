@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intraduire — Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --noir: #0a0a0a;
+    --or: #c9a84c;
+    --or-clair: #e8d5a3;
+    --creme: #f5f0e8;
+    --gris: #2a2a2a;
+    --gris-clair: #888;
+    --texte: #1a1a1a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--noir);
+    color: var(--creme);
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Fond texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .logo {
+    font-family: 'Cairo', sans-serif;
+    font-size: 11px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--or);
+    margin-bottom: 16px;
+    opacity: 0.8;
+  }
+
+  .titre {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 56px);
+    font-weight: 400;
+    color: var(--creme);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .titre em {
+    font-style: italic;
+    color: var(--or);
+  }
+
+  .sous-titre {
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    color: var(--gris-clair);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .separateur {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--or), transparent);
+    margin: 28px auto;
+  }
+
+  /* Zone de saisie */
+  .saisie-zone {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 4px;
+    padding: 40px;
+    margin-bottom: 32px;
+    transition: border-color 0.3s;
+  }
+
+  .saisie-zone:focus-within {
+    border-color: rgba(201,168,76,0.5);
+  }
+
+  .saisie-label {
+    font-family: 'Cairo', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--or);
+    margin-bottom: 20px;
+    display: block;
+    opacity: 0.7;
+  }
+
+  .saisie-mot {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'Cairo', sans-serif;
+    font-size: clamp(32px, 5vw, 52px);
+    color: var(--creme);
+    text-align: center;
+    direction: rtl;
+    letter-spacing: 2px;
+    caret-color: var(--or);
+  }
+
+  .saisie-mot::placeholder {
+    color: rgba(245,240,232,0.2);
+    font-size: clamp(24px, 4vw, 40px);
+  }
+
+  .saisie-note {
+    text-align: center;
+    font-size: 13px;
+    color: var(--gris-clair);
+    margin-top: 16px;
+    font-style: italic;
+  }
+
+  /* Bouton */
+  .btn-analyser {
+    width: 100%;
+    padding: 18px 32px;
+    background: transparent;
+    border: 1px solid var(--or);
+    color: var(--or);
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.3s;
+    margin-bottom: 48px;
+  }
+
+  .btn-analyser:hover:not(:disabled) {
+    background: var(--or);
+    color: var(--noir);
+  }
+
+  .btn-analyser:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Loading */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 48px;
+  }
+
+  .loading.visible { display: block; }
+
+  .loading-mot {
+    font-family: 'Cairo', sans-serif;
+    font-size: 48px;
+    color: var(--or);
+    direction: rtl;
+    animation: pulse 2s ease-in-out infinite;
+    margin-bottom: 20px;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .loading-texte {
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    color: var(--gris-clair);
+    font-style: italic;
+  }
+
+  /* Résultat */
+  .resultat {
+    display: none;
+    animation: apparaitre 0.6s ease;
+  }
+
+  .resultat.visible { display: block; }
+
+  @keyframes apparaitre {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Mot analysé */
+  .mot-analyse {
+    text-align: center;
+    margin-bottom: 48px;
+    padding: 40px;
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 4px;
+    background: rgba(201,168,76,0.03);
+  }
+
+  .mot-arabe-grand {
+    font-family: 'Cairo', sans-serif;
+    font-size: clamp(48px, 8vw, 72px);
+    color: var(--or);
+    direction: rtl;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .mot-translitt {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 20px;
+    color: var(--gris-clair);
+  }
+
+  /* Onglets */
+  .onglets {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    flex-wrap: wrap;
+  }
+
+  .onglet {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    color: var(--gris-clair);
+    font-family: 'Cairo', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+
+  .onglet:hover { color: var(--or-clair); }
+  .onglet.actif {
+    color: var(--or);
+    border-bottom-color: var(--or);
+  }
+
+  /* Contenu onglet */
+  .contenu-onglet { display: none; }
+  .contenu-onglet.actif { display: block; }
+
+  /* Analyse */
+  .analyse-contenu {
+    line-height: 1.9;
+    font-size: 17px;
+    color: var(--creme);
+    font-weight: 300;
+  }
+
+  .analyse-contenu h3 {
+    font-family: 'Cairo', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--or);
+    margin: 36px 0 16px;
+    opacity: 0.8;
+  }
+
+  .analyse-contenu h3:first-child { margin-top: 0; }
+
+  .analyse-contenu p { margin-bottom: 16px; }
+
+  .analyse-contenu strong {
+    color: var(--or-clair);
+    font-weight: 400;
+  }
+
+  .phrase-signature {
+    margin: 40px 0;
+    padding: 32px 40px;
+    border-left: 2px solid var(--or);
+    background: rgba(201,168,76,0.05);
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(18px, 2.5vw, 22px);
+    color: var(--or-clair);
+    line-height: 1.6;
+  }
+
+  .question-cloture {
+    margin-top: 40px;
+    padding: 28px 32px;
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 4px;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--creme);
+    text-align: center;
+    background: rgba(201,168,76,0.03);
+  }
+
+  /* Formats export */
+  .format-bloc {
+    margin-bottom: 40px;
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .format-header {
+    padding: 16px 24px;
+    background: rgba(201,168,76,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .format-nom {
+    font-family: 'Cairo', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--or);
+  }
+
+  .btn-copier {
+    padding: 6px 16px;
+    background: transparent;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--or);
+    font-family: 'Cairo', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .btn-copier:hover { background: var(--or); color: var(--noir); }
+  .btn-copier.copie { background: #2d5a2d; border-color: #4a8a4a; color: #90c090; }
+
+  .format-corps {
+    padding: 28px;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--creme);
+    font-weight: 300;
+    white-space: pre-wrap;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  /* Nouveau mot */
+  .btn-nouveau {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: transparent;
+    border: 1px solid rgba(201,168,76,0.2);
+    color: var(--gris-clair);
+    font-family: 'Cairo', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-top: 48px;
+    transition: all 0.3s;
+  }
+
+  .btn-nouveau:hover { border-color: var(--or); color: var(--or); }
+
+  /* Erreur */
+  .erreur {
+    display: none;
+    padding: 24px;
+    border: 1px solid rgba(200,80,80,0.3);
+    border-radius: 4px;
+    color: #e09090;
+    font-style: italic;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .erreur.visible { display: block; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    font-size: 12px;
+    color: rgba(136,136,136,0.5);
+    font-family: 'Cairo', sans-serif;
+    letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="logo">Projet éducatif · Linguistique coranique</div>
+    <h1 class="titre"><em>Intra</em>duire</h1>
+    <p class="sous-titre">Retrouver le sens là où la traduction l'a perdu</p>
+    <div class="separateur"></div>
+  </div>
+
+  <!-- Zone saisie -->
+  <div id="zone-saisie">
+    <div class="saisie-zone">
+      <span class="saisie-label">Mot arabe à analyser</span>
+      <input 
+        type="text" 
+        id="input-mot" 
+        class="saisie-mot" 
+        placeholder="اكتب الكلمة هنا"
+        dir="rtl"
+        autocomplete="off"
+      />
+      <p class="saisie-note">Saisir le mot en arabe · ex : الصبر · الريب · التقوى</p>
+    </div>
+
+    <div class="erreur" id="erreur-msg"></div>
+
+    <button class="btn-analyser" id="btn-analyser" onclick="analyser()">
+      ✦ &nbsp; Analyser ce mot &nbsp; ✦
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="loading-mot" id="loading-mot"></div>
+    <p class="loading-texte">Remontée aux racines en cours…</p>
+  </div>
+
+  <!-- Résultat -->
+  <div class="resultat" id="resultat">
+
+    <div class="mot-analyse">
+      <div class="mot-arabe-grand" id="res-mot-arabe"></div>
+      <div class="mot-translitt" id="res-translitt"></div>
+    </div>
+
+    <div class="onglets">
+      <button class="onglet actif" onclick="changerOnglet('analyse', this)">Analyse</button>
+      <button class="onglet" onclick="changerOnglet('instagram', this)">Instagram</button>
+      <button class="onglet" onclick="changerOnglet('reels', this)">Script Reels</button>
+      <button class="onglet" onclick="changerOnglet('linkedin', this)">LinkedIn</button>
+    </div>
+
+    <!-- Analyse complète -->
+    <div class="contenu-onglet actif" id="tab-analyse">
+      <div class="analyse-contenu" id="res-analyse"></div>
+    </div>
+
+    <!-- Instagram -->
+    <div class="contenu-onglet" id="tab-instagram">
+      <div class="format-bloc">
+        <div class="format-header">
+          <span class="format-nom">Post Instagram</span>
+          <button class="btn-copier" onclick="copier('res-instagram', this)">Copier</button>
+        </div>
+        <div class="format-corps" id="res-instagram"></div>
+      </div>
+    </div>
+
+    <!-- Reels -->
+    <div class="contenu-onglet" id="tab-reels">
+      <div class="format-bloc">
+        <div class="format-header">
+          <span class="format-nom">Script Reels · 45 secondes</span>
+          <button class="btn-copier" onclick="copier('res-reels', this)">Copier</button>
+        </div>
+        <div class="format-corps" id="res-reels"></div>
+      </div>
+    </div>
+
+    <!-- LinkedIn -->
+    <div class="contenu-onglet" id="tab-linkedin">
+      <div class="format-bloc">
+        <div class="format-header">
+          <span class="format-nom">Article LinkedIn</span>
+          <button class="btn-copier" onclick="copier('res-linkedin', this)">Copier</button>
+        </div>
+        <div class="format-corps" id="res-linkedin"></div>
+      </div>
+    </div>
+
+    <button class="btn-nouveau" onclick="nouveau()">← Analyser un autre mot</button>
+  </div>
+
+  <div class="footer">Intraduire · Linguistique coranique · 2026</div>
+
+</div>
+
+<script>
+const PROMPT_SYSTEME = `Tu es un expert en linguistique arabe coranique, spécialisé dans l'analyse étymologique et sémantique des termes du Coran et de la Sunna. Tu n'es pas un traducteur littéral — tu es un passeur de sens.
+
+Ton rôle est de révéler le sens profond et originel des mots arabes islamiques, souvent mal traduits ou appauvris dans les langues occidentales.
+
+Pour chaque mot soumis, suis cette méthode rigoureuse :
+
+ÉTAPE 1 — LA RACINE : Identifie les 3 lettres racines. Déploie le champ sémantique complet — tous les mots dérivés et leurs sens.
+
+ÉTAPE 2 — LE CONTEXTE CORANIQUE : Identifie les occurrences les plus significatives dans le Coran. Analyse ce que chaque contexte révèle sur le sens.
+
+ÉTAPE 3 — L'USAGE PROPHÉTIQUE : Identifie les hadiths éclairants. Le Prophète ﷺ était le premier interprète vivant du Coran.
+
+ÉTAPE 4 — LES FAUX AMIS : La traduction courante et pourquoi elle trahit le sens originel.
+
+ÉTAPE 5 — AUTRES MOTS FRANÇAIS INSUFFISANTS : D'autres mots que le lecteur pourrait associer — et pourquoi ils ratent également le sens.
+
+ÉTAPE 6 — L'ANTONYME CORANIQUE : Le mot arabe opposé existentiel tel que le Coran le construit. Montre comment les deux se définissent mutuellement.
+
+ÉTAPE 7 — LA SENSATION PHYSIQUE : La réalité corporelle ou sensorielle que porte le mot. Ancre dans le concret.
+
+ÉTAPE 8 — LA TRADUCTION JUSTE : Une traduction française qui restitue la sensation, pas juste le concept.
+
+ÉTAPE 9 — LA PHRASE SIGNATURE : Une phrase courte, forte, mémorable. Le cœur de l'épisode.
+
+ÉTAPE 10 — LA QUESTION DE CLÔTURE : Une question qui invite à l'introspection sans donner de réponse.
+
+Principes absolus :
+- Ne jamais sacrifier la profondeur à la simplicité
+- Toujours partir de la racine, jamais du dictionnaire
+- Le français doit faire ressentir ce que l'arabe porte`;
+
+async function analyser() {
+  const mot = document.getElementById('input-mot').value.trim();
+  
+  if (!mot) {
+    afficherErreur('Veuillez saisir un mot arabe.');
+    return;
+  }
+
+  cacherErreur();
+  document.getElementById('btn-analyser').disabled = true;
+  document.getElementById('loading-mot').textContent = mot;
+  document.getElementById('loading').classList.add('visible');
+  document.getElementById('zone-saisie').style.display = 'none';
+
+  try {
+    // Appel 1 : Analyse complète
+    const analyseReponse = await appelClaude(`${PROMPT_SYSTEME}
+
+Analyse le mot : ${mot}
+
+Produis l'analyse complète en français selon les 10 étapes. 
+Formate ta réponse avec des balises comme ceci :
+<racine>contenu</racine>
+<coranique>contenu</coranique>
+<prophetique>contenu</prophetique>
+<faux-amis>contenu</faux-amis>
+<autres-insuffisants>contenu</autres-insuffisants>
+<antonyme>contenu</antonyme>
+<sensation>contenu</sensation>
+<traduction-juste>contenu</traduction-juste>
+<phrase-signature>contenu</phrase-signature>
+<question>contenu</question>
+<translitteration>translittération en alphabet latin</translitteration>`);
+
+    // Appel 2 : Formats réseaux sociaux
+    const formatsReponse = await appelClaude(`${PROMPT_SYSTEME}
+
+Sur la base de cette analyse du mot ${mot} :
+${analyseReponse}
+
+Produis maintenant les 3 formats de publication. Réponds UNIQUEMENT avec ces balises :
+
+<instagram>
+[Post Instagram : accroche percutante + développement + phrase signature + question de clôture + 10 hashtags pertinents. 150-200 mots max.]
+</instagram>
+
+<reels>
+[Script voix off Reels 45 secondes : ton direct, phrases courtes, rythme oral. Indique les temps : (0-5s) (5-15s) etc.]
+</reels>
+
+<linkedin>
+[Article LinkedIn : ton plus analytique et professionnel. 400-500 mots. Développe la profondeur étymologique pour un public cultivé.]
+</linkedin>`);
+
+    // Parser les réponses
+    const analyse = parserBalises(analyseReponse);
+    const formats = parserBalises(formatsReponse);
+
+    // Afficher le mot et la translittération
+    document.getElementById('res-mot-arabe').textContent = mot;
+    document.getElementById('res-translitt').textContent = analyse.translitteration || '';
+
+    // Construire l'analyse HTML
+    document.getElementById('res-analyse').innerHTML = construireAnalyseHTML(analyse);
+
+    // Remplir les formats
+    document.getElementById('res-instagram').textContent = formats.instagram || '';
+    document.getElementById('res-reels').textContent = formats.reels || '';
+    document.getElementById('res-linkedin').textContent = formats.linkedin || '';
+
+    // Afficher le résultat
+    document.getElementById('loading').classList.remove('visible');
+    document.getElementById('resultat').classList.add('visible');
+
+  } catch (err) {
+    document.getElementById('loading').classList.remove('visible');
+    document.getElementById('zone-saisie').style.display = 'block';
+    document.getElementById('btn-analyser').disabled = false;
+    afficherErreur('Une erreur est survenue. Vérifiez votre connexion et réessayez.');
+    console.error(err);
+  }
+}
+
+async function appelClaude(prompt) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!response.ok) throw new Error(`API error: ${response.status}`);
+  const data = await response.json();
+  return data.content.map(b => b.text || '').join('');
+}
+
+function parserBalises(texte) {
+  const result = {};
+  const regex = /<([a-z-]+)>([\s\S]*?)<\/\1>/g;
+  let match;
+  while ((match = regex.exec(texte)) !== null) {
+    result[match[1]] = match[2].trim();
+  }
+  return result;
+}
+
+function construireAnalyseHTML(a) {
+  const section = (titre, contenu) => contenu ? 
+    `<h3>${titre}</h3><p>${contenu.replace(/\n/g, '</p><p>')}</p>` : '';
+
+  let html = '';
+  html += section('La Racine', a.racine);
+  html += section('Le Contexte Coranique', a.coranique);
+  html += section('L\'Usage Prophétique', a.prophetique);
+  html += section('Les Faux Amis', a['faux-amis']);
+  html += section('Autres Mots Insuffisants', a['autres-insuffisants']);
+  html += section('L\'Antonyme Coranique', a.antonyme);
+  html += section('La Sensation Physique', a.sensation);
+  html += section('La Traduction Juste', a['traduction-juste']);
+
+  if (a['phrase-signature']) {
+    html += `<div class="phrase-signature">${a['phrase-signature']}</div>`;
+  }
+
+  if (a.question) {
+    html += `<div class="question-cloture">❝ ${a.question} ❞</div>`;
+  }
+
+  return html || '<p>Analyse en cours de traitement…</p>';
+}
+
+function changerOnglet(id, btn) {
+  document.querySelectorAll('.onglet').forEach(o => o.classList.remove('actif'));
+  document.querySelectorAll('.contenu-onglet').forEach(c => c.classList.remove('actif'));
+  btn.classList.add('actif');
+  document.getElementById('tab-' + id).classList.add('actif');
+}
+
+function copier(id, btn) {
+  const texte = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(texte).then(() => {
+    btn.textContent = '✓ Copié';
+    btn.classList.add('copie');
+    setTimeout(() => {
+      btn.textContent = 'Copier';
+      btn.classList.remove('copie');
+    }, 2000);
+  });
+}
+
+function nouveau() {
+  document.getElementById('resultat').classList.remove('visible');
+  document.getElementById('zone-saisie').style.display = 'block';
+  document.getElementById('btn-analyser').disabled = false;
+  document.getElementById('input-mot').value = '';
+  document.getElementById('input-mot').focus();
+  changerOnglet('analyse', document.querySelector('.onglet'));
+}
+
+function afficherErreur(msg) {
+  const el = document.getElementById('erreur-msg');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function cacherErreur() {
+  document.getElementById('erreur-msg').classList.remove('visible');
+}
+
+// Entrée clavier
+document.getElementById('input-mot').addEventListener('keydown', e => {
+  if (e.key === 'Enter') analyser();
+});
+</script>
+
+</body>
+</html>
