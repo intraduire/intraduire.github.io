@@ -687,10 +687,17 @@
         if (!hasCache) document.getElementById('index-section').style.display = 'none';
       }
     }
+    // Tri alphabétique arabe (dictionnaire) — on ignore l'article « ال »
+    const arCollator = new Intl.Collator('ar');
+    const tocSortKey = (s) => {
+      s = (s || '').trim();
+      return s.startsWith('ال') ? s.slice(2) : s;
+    };
     function renderTOC(mots) {
       const ul = document.getElementById('toc');
       ul.innerHTML = '';
-      mots.forEach((m, i) => {
+      const sorted = mots.slice().sort((a, b) => arCollator.compare(tocSortKey(a.mot), tocSortKey(b.mot)));
+      sorted.forEach((m, i) => {
         const li = document.createElement('li');
         li.innerHTML =
           `<span class="toc-num">${String(i + 1).padStart(2, '0')}</span>` +
@@ -700,7 +707,7 @@
         ul.appendChild(li);
       });
       document.getElementById('index-count').textContent =
-        `Index — ${mots.length} mot${mots.length > 1 ? 's' : ''}`;
+        `Index — ${sorted.length} mot${sorted.length > 1 ? 's' : ''}`;
       document.getElementById('index-section').style.display = '';
     }
 
