@@ -197,8 +197,8 @@ async function go() {
       badge.textContent = '✓ Depuis le cache';
       badge.className = 'source-badge source-cache';
     } else {
-      badge.textContent = '✦ Analysé par Claude';
-      badge.className = 'source-badge source-claude';
+      badge.textContent = '';
+      badge.className = '';
     }
 
     document.getElementById('r-mot').textContent = mot;
