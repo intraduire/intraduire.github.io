@@ -14,6 +14,11 @@
         t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
       }
       document.documentElement.setAttribute('data-theme', t);
+      var fs = parseFloat(localStorage.getItem('intraduire-fscale'));
+      if (!isNaN(fs)) {
+        fs = Math.min(1.5, Math.max(0.9, fs));
+        document.documentElement.style.setProperty('--fscale', fs);
+      }
     } catch (e) {
       document.documentElement.setAttribute('data-theme', 'light');
     }
@@ -32,12 +37,13 @@
     --paper: #efe9d8;
     --ink: #2b1f15;
     --ink-2: #4e4338;
-    --muted: #978e80;
+    --muted: #6a6253;
     --accent: #8a3a1f;
     --paper-2: #e4dcc6;
     --lettrine-size: 150px;
     --measure: 38rem;
     --rule: rgba(26,25,22,0.30);
+    --fscale: 1;
   }
 
   /* ── Vue sombre ─────────────────────────────────────────────── */
@@ -53,13 +59,30 @@
 
   *, *::before, *::after { box-sizing: border-box; }
 
+  /* Accessibilité : indicateur de focus clavier visible */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  /* Accessibilité : respect du « réduire les animations » */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+    .reveal { opacity: 1 !important; transform: none !important; }
+  }
+
   html, body {
     margin: 0;
     padding: 0;
     background: var(--paper);
     color: var(--ink);
     font-family: "Newsreader", Georgia, serif;
-    font-size: 18px;
+    font-size: calc(18px * var(--fscale));
     line-height: 1.6;
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
@@ -182,7 +205,7 @@
     border-bottom: 1px solid var(--ink);
     padding: 14px 2px 16px;
     font-family: "Amiri", "Newsreader", serif;
-    font-size: 24px;
+    font-size: calc(24px * var(--fscale));
     line-height: 1;
     text-align: right;
     direction: rtl;
@@ -193,6 +216,7 @@
   }
   .plume::placeholder { color: var(--muted); opacity: 0.85; font-style: normal; }
   .plume:focus { border-bottom-color: var(--accent); }
+  .plume:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 
   .plume-hint {
     margin-top: 10px;
@@ -251,13 +275,13 @@
   .toc-translit {
     font-family: "Newsreader", serif;
     font-style: italic;
-    font-size: 19px;
+    font-size: calc(19px * var(--fscale));
     color: var(--ink);
     transition: color 180ms ease;
   }
   .toc-ar {
     font-family: "Amiri", serif;
-    font-size: 24px;
+    font-size: calc(24px * var(--fscale));
     line-height: 1;
     direction: rtl;
     color: var(--ink);
@@ -332,7 +356,9 @@
   }
 
   .essay-back {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 40px;
     font-family: "JetBrains Mono", ui-monospace, monospace;
     font-size: 10px;
@@ -342,18 +368,13 @@
     text-decoration: none;
     cursor: pointer;
   }
-  .essay-back:hover { color: var(--accent); }
-
-  .cache-badge {
-    display: block;
-    margin-bottom: 28px;
-    font-family: "JetBrains Mono", ui-monospace, monospace;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--muted);
+  .essay-back .back-arrow {
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: 0;
   }
-  .cache-badge[hidden] { display: none; }
+  .essay-back:hover { color: var(--accent); }
 
   .essay-eyebrow {
     font-family: "JetBrains Mono", ui-monospace, monospace;
@@ -384,7 +405,7 @@
   .title {
     font-family: "Newsreader", serif;
     font-weight: 400;
-    font-size: clamp(28px, 6vw, 36px);
+    font-size: calc(clamp(28px, 6vw, 36px) * var(--fscale));
     line-height: 1.15;
     letter-spacing: -0.005em;
     margin: 0.18em 0 0;
@@ -410,7 +431,7 @@
 
   .section p {
     color: var(--ink-2);
-    font-size: 17px;
+    font-size: calc(17px * var(--fscale));
     line-height: 1.65;
   }
   .section p strong {
@@ -419,7 +440,7 @@
   }
   .section .ar-inline {
     font-family: "Amiri", serif;
-    font-size: 22px;
+    font-size: calc(22px * var(--fscale));
     line-height: 1;
     direction: rtl;
     color: var(--ink);
@@ -440,7 +461,7 @@
   .signature-quote {
     font-family: "Newsreader", serif;
     font-style: italic;
-    font-size: clamp(22px, 4.4vw, 26px);
+    font-size: calc(clamp(22px, 4.4vw, 26px) * var(--fscale));
     line-height: 1.35;
     color: var(--ink);
     margin: 0 auto 32px;
@@ -475,7 +496,7 @@
   .closing-q {
     font-family: "Newsreader", serif;
     font-style: italic;
-    font-size: clamp(22px, 4.6vw, 26px);
+    font-size: calc(clamp(22px, 4.6vw, 26px) * var(--fscale));
     line-height: 1.4;
     color: var(--paper);
     margin: 0;
@@ -530,17 +551,45 @@
   .to-top:hover { color: var(--accent); }
   .to-top svg { width: 18px; height: 18px; display: block; }
 
+  /* ── Taille du texte ────────────────────────────────────────── */
+  .text-size {
+    position: fixed;
+    top: 16px; left: 16px;
+    z-index: 60;
+    display: inline-flex;
+    gap: 2px;
+  }
+  .ts-btn {
+    min-width: 32px; height: 34px;
+    padding: 0 7px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; border: 0; border-radius: 0;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: color 180ms ease;
+  }
+  .ts-btn:hover { color: var(--accent); }
+  .ts-btn:disabled { opacity: 0.35; cursor: default; }
+
   /* Mobile tightening */
   @media (max-width: 480px) {
     .shell { padding: 40px 22px 64px; }
     .signature, .closing { margin-left: -22px; margin-right: -22px; padding-left: 28px; padding-right: 28px; }
     .closing { padding: 80px 28px 96px; }
     :root { --lettrine-size: 104px; }
-    body { font-size: 17px; }
+    body { font-size: calc(17px * var(--fscale)); }
   }
 </style>
 </head>
 <body>
+
+<div class="text-size" role="group" aria-label="Taille du texte">
+  <button class="ts-btn" id="ts-dec" type="button" aria-label="Diminuer la taille du texte">A−</button>
+  <button class="ts-btn" id="ts-inc" type="button" aria-label="Augmenter la taille du texte">A+</button>
+</div>
 
 <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Basculer la vue">
   <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -602,7 +651,7 @@
   <section class="screen" id="screen-loading" aria-label="Chargement">
     <div class="loader">
       <div class="loader-arabic" id="loader-ar"></div>
-      <div class="loader-phrase" id="loader-phrase">— Vérification du cache —</div>
+      <div class="loader-phrase" id="loader-phrase" aria-live="polite">— On ouvre le manuscrit —</div>
       <div class="loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
   </section>
@@ -611,9 +660,8 @@
   <section class="screen" id="screen-essay" aria-label="Essai">
     <div class="shell">
 
-      <a class="essay-back" id="back-link">← Intraduire</a>
+      <a class="essay-back" id="back-link" role="link" tabindex="0"><span class="back-arrow" aria-hidden="true">←</span> Intraduire</a>
 
-      <span class="cache-badge reveal" id="cache-badge" hidden>✓ depuis le cache</span>
       <div class="essay-eyebrow reveal" id="ess-eyebrow"></div>
 
       <header class="title-row reveal">
@@ -699,11 +747,18 @@
       const sorted = mots.slice().sort((a, b) => arCollator.compare(tocSortKey(a.mot), tocSortKey(b.mot)));
       sorted.forEach((m, i) => {
         const li = document.createElement('li');
+        li.setAttribute('role', 'button');
+        li.setAttribute('tabindex', '0');
+        li.setAttribute('aria-label', `Lire ${m.translitteration || m.mot}`);
         li.innerHTML =
           `<span class="toc-num">${String(i + 1).padStart(2, '0')}</span>` +
           `<span class="toc-translit">${esc(m.translitteration)}</span>` +
           `<span class="toc-ar">${esc(m.mot)}</span>`;
-        li.addEventListener('click', () => startFlow(m.mot));
+        const open = () => startFlow(m.mot);
+        li.addEventListener('click', open);
+        li.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+        });
         ul.appendChild(li);
       });
       document.getElementById('index-count').textContent =
@@ -713,7 +768,7 @@
 
     // ── Phrases de chargement (défilent jusqu'à la réponse) ─────
     const phrases = [
-      '— Vérification du cache —',
+      '— On ouvre le manuscrit —',
       '— Lecture de la racine —',
       '— Mise en contexte —',
       '— Recueil des nuances —',
@@ -777,9 +832,6 @@
       document.getElementById('ess-eyebrow').textContent = `Intraduire · ${tr || mot}`;
       document.getElementById('ess-lettrine').textContent = Array.from(mot)[0] || '';
       document.getElementById('ess-title').textContent = tr || mot;
-
-      const badge = document.getElementById('cache-badge');
-      badge.hidden = data._source !== 'cache';
 
       const present = SECTIONS.filter(([k]) => data[k] && String(data[k]).trim());
       const hasAntonyme = present.some(([k]) => k === 'antonyme');
@@ -852,13 +904,18 @@
       if (e.key === 'Enter') { e.preventDefault(); startFlow(plume.value); }
     });
 
-    document.getElementById('back-link').addEventListener('click', (e) => {
-      e.preventDefault();
+    const backLink = document.getElementById('back-link');
+    function goHome(e) {
+      if (e) e.preventDefault();
       stopPhrases();
       show('home');
       hideErr();
       plume.value = '';
       plume.focus();
+    }
+    backLink.addEventListener('click', goHome);
+    backLink.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goHome(e); }
     });
 
     // ── Barre de progression de lecture ────────────────────────
@@ -896,6 +953,32 @@
       syncTheme();
     });
     syncTheme();
+
+    // ── Taille du texte (accessibilité) ─────────────────────────
+    const FSCALE_KEY = 'intraduire-fscale';
+    const FS_MIN = 0.9, FS_MAX = 1.5, FS_STEP = 0.1;
+    const tsDec = document.getElementById('ts-dec');
+    const tsInc = document.getElementById('ts-inc');
+    let fscale = (() => {
+      const v = parseFloat(localStorage.getItem(FSCALE_KEY));
+      return isNaN(v) ? 1 : Math.min(FS_MAX, Math.max(FS_MIN, v));
+    })();
+    function applyFscale() {
+      docEl.style.setProperty('--fscale', fscale);
+      tsDec.disabled = fscale <= FS_MIN + 1e-9;
+      tsInc.disabled = fscale >= FS_MAX - 1e-9;
+      const pct = Math.round(fscale * 100);
+      tsDec.setAttribute('aria-label', `Diminuer la taille du texte (actuel ${pct} %)`);
+      tsInc.setAttribute('aria-label', `Augmenter la taille du texte (actuel ${pct} %)`);
+    }
+    function setFscale(v) {
+      fscale = Math.min(FS_MAX, Math.max(FS_MIN, Math.round(v * 10) / 10));
+      try { localStorage.setItem(FSCALE_KEY, fscale); } catch (e) {}
+      applyFscale();
+    }
+    tsDec.addEventListener('click', () => setFscale(fscale - FS_STEP));
+    tsInc.addEventListener('click', () => setFscale(fscale + FS_STEP));
+    applyFscale();
 
     // ── Init ────────────────────────────────────────────────────
     chargerListe();
