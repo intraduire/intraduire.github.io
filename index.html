@@ -88,7 +88,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    scroll-behavior: smooth;
   }
 
   body::before {
@@ -132,13 +131,14 @@
     pointer-events: none;
     position: absolute;
     inset: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: clip; /* écran inactif : pas de conteneur de défilement fantôme */
   }
   .screen.active {
     opacity: 1;
     pointer-events: auto;
     position: relative;
+    overflow-x: clip;    /* clippe le plein-cadre (signature/clôture) */
+    overflow-y: visible; /* le défilement vertical = la fenêtre, conteneur unique */
   }
   .stage {
     position: relative;
@@ -698,7 +698,7 @@
     function show(name) {
       Object.values(screens).forEach(s => s.classList.remove('active'));
       screens[name].classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
     function showErr(m) { errEl.textContent = m; errEl.classList.add('show'); }
     function hideErr() { errEl.classList.remove('show'); errEl.textContent = ''; }
