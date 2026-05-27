@@ -90,6 +90,8 @@
     text-rendering: optimizeLegibility;
   }
 
+  html { overflow-x: hidden; } /* clippe le plein-cadre ; scroller racine unique (sûr iOS) */
+
   body::before {
     content: "";
     position: fixed;
@@ -127,22 +129,25 @@
 
   .screen {
     opacity: 0;
-    transition: opacity 320ms ease;
+    visibility: hidden; /* inerte au hit-test (iOS) : pas de calque fantôme qui bloque le scroll */
+    transition: opacity 320ms ease, visibility 0s linear 320ms;
     pointer-events: none;
     position: absolute;
     inset: 0;
-    overflow: clip; /* écran inactif : pas de conteneur de défilement fantôme */
+    overflow: clip;
   }
   .screen.active {
     opacity: 1;
+    visibility: visible;
+    transition: opacity 320ms ease, visibility 0s linear 0s;
     pointer-events: auto;
     position: relative;
-    overflow-x: clip;    /* clippe le plein-cadre (signature/clôture) */
-    overflow-y: visible; /* le défilement vertical = la fenêtre, conteneur unique */
+    overflow: visible; /* défilement vertical = la fenêtre, conteneur unique (clip horizontal via html) */
   }
   .stage {
     position: relative;
     min-height: 100vh;
+    min-height: 100dvh; /* hauteur visible réelle sur mobile (barre d'adresse) */
   }
 
   /* ── ACCUEIL ──────────────────────────────────────────────────── */
@@ -303,6 +308,7 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    min-height: 100dvh;
     padding: 28px;
     text-align: center;
   }
@@ -640,7 +646,6 @@
       <div id="index-section" style="display:none">
         <div class="index-head">
           <span id="index-count">Index</span>
-          <span>أ</span>
         </div>
         <ul class="toc" id="toc"></ul>
       </div>
