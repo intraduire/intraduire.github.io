@@ -580,6 +580,14 @@
   .ts-btn:hover { color: var(--accent); }
   .ts-btn:disabled { opacity: 0.35; cursor: default; }
 
+  /* Pastille opaque : empêche les contrôles fixes de se confondre avec le contenu défilant dessous */
+  .text-size, .theme-toggle, .to-top {
+    background: var(--paper);
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px var(--rule);
+  }
+  .text-size { padding: 3px 5px; }
+
   /* Mobile tightening */
   @media (max-width: 480px) {
     .shell { padding: 40px 22px 64px; }
