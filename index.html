@@ -603,6 +603,49 @@
   }
   .text-size { padding: 3px 5px; }
 
+  /* ── Suggestion / remarque (discret, sous la clôture) ───────── */
+  .suggest { margin: 64px 0 0; text-align: center; }
+  .suggest-toggle {
+    background: transparent; border: 0; padding: 6px 2px;
+    cursor: pointer; -webkit-appearance: none;
+    font-family: "Newsreader", serif; font-style: italic;
+    font-size: 15px; color: var(--muted);
+    text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 0.5px;
+    transition: color 180ms ease;
+  }
+  .suggest-toggle:hover:not(:disabled) { color: var(--accent); }
+  .suggest-toggle:disabled { cursor: default; text-decoration: none; }
+  .suggest-form {
+    max-width: 30rem; margin: 22px auto 0;
+    text-align: left; display: grid; gap: 12px;
+  }
+  .suggest-label {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted);
+  }
+  .suggest-text, .suggest-email {
+    width: 100%; background: var(--paper-2);
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 12px 14px; color: var(--ink);
+    font-family: "Newsreader", serif; font-size: 16px;
+    outline: none; -webkit-appearance: none;
+  }
+  .suggest-text { resize: vertical; min-height: 5em; }
+  .suggest-email { font-size: 14px; }
+  .suggest-text:focus, .suggest-email:focus { border-color: var(--accent); }
+  .suggest-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .suggest-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .suggest-send {
+    background: transparent; border: 1px solid var(--ink); color: var(--ink);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    padding: 11px 20px; border-radius: 2px; cursor: pointer;
+    -webkit-appearance: none; transition: background 180ms ease, color 180ms ease;
+  }
+  .suggest-send:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+  .suggest-send:disabled { opacity: 0.5; cursor: default; }
+  .suggest-status { font-family: "Newsreader", serif; font-style: italic; font-size: 14px; color: var(--muted); }
+
   /* Mobile tightening */
   @media (max-width: 480px) {
     .shell { padding: 40px 22px 64px; }
@@ -702,6 +745,20 @@
       </header>
 
       <article id="ess-article"></article>
+
+      <section class="suggest reveal" id="suggest" hidden aria-label="Proposer une nuance">
+        <button class="suggest-toggle" id="suggest-toggle" type="button" aria-expanded="false" aria-controls="suggest-form">Tu traduirais autrement&nbsp;?</button>
+        <form class="suggest-form" id="suggest-form" hidden>
+          <label class="suggest-label" for="suggest-text">Ta nuance, ta remarque</label>
+          <textarea class="suggest-text" id="suggest-text" rows="3" maxlength="1200" placeholder="Une proposition, une correction, une nuance sur la traduction…"></textarea>
+          <input class="suggest-email" id="suggest-email" type="email" autocomplete="email" placeholder="ton e-mail (facultatif, pour une réponse)" />
+          <input class="suggest-hp" id="suggest-hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <div class="suggest-row">
+            <button class="suggest-send" id="suggest-send" type="submit">Envoyer</button>
+            <span class="suggest-status" id="suggest-status" role="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </section>
     </div>
   </section>
 
@@ -726,6 +783,9 @@
     const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     const esc = (s) => String(s == null ? '' : s)
       .replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+    let currentMot = '';        // mot arabe affiché (pour les suggestions)
+    let suggestEnabled = false; // activé via le flag GAS action=config
 
     function show(name) {
       Object.values(screens).forEach(s => s.classList.remove('active'));
@@ -924,7 +984,9 @@
         return;
       }
 
+      currentMot = data.mot || mot;
       buildEssay(data, mot);
+      document.getElementById('suggest').hidden = !suggestEnabled;
       resetEssayReveal();
       show('essay');
       requestAnimationFrame(() => requestAnimationFrame(revealEssay));
@@ -1011,6 +1073,61 @@
     tsDec.addEventListener('click', () => setFscale(fscale - FS_STEP));
     tsInc.addEventListener('click', () => setFscale(fscale + FS_STEP));
     applyFscale();
+
+    // ── Suggestions (affordance affichée seulement si flag GAS = ON) ─
+    (function () {
+      const toggle = document.getElementById('suggest-toggle');
+      const form = document.getElementById('suggest-form');
+      const txt = document.getElementById('suggest-text');
+      const sendBtn = document.getElementById('suggest-send');
+      const statusEl = document.getElementById('suggest-status');
+
+      fetch(GAS_URL + '?action=config')
+        .then(r => r.json())
+        .then(d => { suggestEnabled = !!(d && d.success && d.data && d.data.suggestions); })
+        .catch(() => {});
+
+      toggle.addEventListener('click', () => {
+        const opening = form.hidden;
+        form.hidden = !opening;
+        toggle.setAttribute('aria-expanded', String(opening));
+        if (opening) txt.focus();
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const texte = txt.value.trim();
+        if (!texte) { statusEl.textContent = 'Écris ta nuance d’abord.'; txt.focus(); return; }
+        sendBtn.disabled = true;
+        statusEl.textContent = 'Envoi…';
+        try {
+          const r = await fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+              action: 'suggestion',
+              mot: currentMot,
+              texte: texte,
+              email: document.getElementById('suggest-email').value.trim(),
+              hp: document.getElementById('suggest-hp').value
+            })
+          });
+          let ok = true;
+          try { const d = await r.json(); ok = d.success !== false; } catch (_) {}
+          if (ok) {
+            form.hidden = true;
+            toggle.textContent = 'Merci, c’est noté.';
+            toggle.disabled = true;
+            toggle.setAttribute('aria-expanded', 'false');
+          } else {
+            statusEl.textContent = 'Échec, réessaie.';
+            sendBtn.disabled = false;
+          }
+        } catch (_) {
+          statusEl.textContent = 'Échec de l’envoi, réessaie.';
+          sendBtn.disabled = false;
+        }
+      });
+    })();
 
     // ── Init ────────────────────────────────────────────────────
     chargerListe();
