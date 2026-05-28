@@ -604,13 +604,19 @@
   .text-size { padding: 3px 5px; }
 
   /* ── Suggestion / remarque (discret, sous la clôture) ───────── */
-  .suggest { margin: 64px 0 0; text-align: center; }
+  .suggest {
+    /* clôture a margin-bottom:-80 → on compense pour décoller franchement */
+    margin: 120px 0 0;
+    padding-top: 32px;
+    border-top: 1px dotted var(--rule);
+    text-align: center;
+  }
   .suggest-toggle {
-    background: transparent; border: 0; padding: 6px 2px;
+    background: transparent; border: 0; padding: 8px 4px;
     cursor: pointer; -webkit-appearance: none;
     font-family: "Newsreader", serif; font-style: italic;
-    font-size: 15px; color: var(--muted);
-    text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 0.5px;
+    font-size: 18px; color: var(--ink-2);
+    text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 0.5px;
     transition: color 180ms ease;
   }
   .suggest-toggle:hover:not(:disabled) { color: var(--accent); }
