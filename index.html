@@ -649,6 +649,8 @@
   /* Mobile tightening */
   @media (max-width: 480px) {
     .shell { padding: 40px 22px 64px; }
+    /* Sur mobile, descend le retour-accueil pour qu'il ne soit pas masqué par la pastille A−/A+ fixée en haut */
+    .essay-home { margin-top: 24px; }
     .signature, .closing { margin-left: -22px; margin-right: -22px; padding-left: 28px; padding-right: 28px; }
     .closing { padding: 80px 28px 96px; }
     :root { --lettrine-size: 104px; }
@@ -1101,16 +1103,15 @@
         sendBtn.disabled = true;
         statusEl.textContent = 'Envoi…';
         try {
-          const r = await fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-              action: 'suggestion',
-              mot: currentMot,
-              texte: texte,
-              email: document.getElementById('suggest-email').value.trim(),
-              hp: document.getElementById('suggest-hp').value
-            })
+          // GAS POST suit un 302 qui perd le body → on passe par GET (params URL).
+          const qs = new URLSearchParams({
+            action: 'suggestion',
+            mot: currentMot,
+            texte: texte,
+            email: document.getElementById('suggest-email').value.trim(),
+            hp: document.getElementById('suggest-hp').value
           });
+          const r = await fetch(GAS_URL + '?' + qs.toString());
           let ok = true;
           try { const d = await r.json(); ok = d.success !== false; } catch (_) {}
           if (ok) {
