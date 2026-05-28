@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Intraduire — À propos · La méthode</title>
+
+<script>
+  // Thème (clair/sombre) + taille de texte, appliqués avant le paint
+  (function () {
+    try {
+      var t = localStorage.getItem('intraduire-theme');
+      if (t !== 'dark' && t !== 'light') {
+        t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+      var fs = parseFloat(localStorage.getItem('intraduire-fscale'));
+      if (!isNaN(fs)) {
+        fs = Math.min(1.5, Math.max(0.9, fs));
+        document.documentElement.style.setProperty('--fscale', fs);
+      }
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400;1,6..72,500&family=Amiri:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --paper: #efe9d8;
+    --ink: #2b1f15;
+    --ink-2: #4e4338;
+    --muted: #6a6253;
+    --accent: #8a3a1f;
+    --paper-2: #e4dcc6;
+    --measure: 38rem;
+    --rule: rgba(26,25,22,0.30);
+    --fscale: 1;
+  }
+  html[data-theme="dark"] {
+    --paper: #15120d;
+    --ink: #ece4d4;
+    --ink-2: #c9c0ad;
+    --muted: #8c8474;
+    --accent: #c2613a;
+    --paper-2: #211c14;
+    --rule: rgba(236,228,212,0.16);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+    .reveal { opacity: 1 !important; transform: none !important; }
+  }
+
+  html { overflow-x: hidden; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Newsreader", Georgia, serif;
+    font-size: calc(18px * var(--fscale));
+    line-height: 1.6;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(ellipse 1200px 800px at 20% 10%, rgba(58,56,51,0.045), transparent 60%),
+      radial-gradient(ellipse 900px 700px at 85% 90%, rgba(184,68,46,0.035), transparent 65%);
+  }
+  html[data-theme="dark"] body::before {
+    background-image:
+      radial-gradient(ellipse 1200px 800px at 20% 10%, rgba(236,228,212,0.05), transparent 60%),
+      radial-gradient(ellipse 900px 700px at 85% 90%, rgba(194,97,58,0.06), transparent 65%);
+  }
+
+  body > * { position: relative; z-index: 1; }
+
+  p { text-wrap: pretty; margin: 0 0 1.1em; }
+  h1, h2 { text-wrap: balance; }
+  a { color: inherit; }
+
+  /* ── Layout shell ─────────────────────────────────────────────── */
+  .shell {
+    width: 100%;
+    max-width: var(--measure);
+    margin: 0 auto;
+    padding: 56px 28px 64px;
+  }
+
+  /* ── Retour accueil = sceau Colophon (cohérent avec l'essai) ── */
+  .essay-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 56px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 180ms ease;
+  }
+  .essay-home:hover { opacity: 0.6; }
+  .essay-home:hover .eh-seal { color: var(--accent); }
+  .eh-seal {
+    font-family: "Amiri", serif;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--ink);
+    direction: rtl;
+    transition: color 180ms ease;
+  }
+  .eh-rule {
+    width: 1px;
+    align-self: stretch;
+    min-height: 20px;
+    background: var(--accent);
+    opacity: 0.9;
+  }
+  .eh-name {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-right: 0.28em;
+  }
+
+  /* ── Eyebrow + title ──────────────────────────────────────────── */
+  .eyebrow {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .title {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: calc(clamp(32px, 7vw, 44px) * var(--fscale));
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+    margin: 0 0 8px;
+    text-align: center;
+  }
+  .title em { font-style: italic; }
+  .title .gloss {
+    color: var(--muted);
+    font-style: normal;
+  }
+
+  /* ── Sections + running heads ─────────────────────────────────── */
+  .running-head {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 14px;
+    align-items: center;
+    margin: 64px 0 28px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .running-head .rh-rule {
+    height: 1px;
+    background: var(--rule);
+  }
+  .section p {
+    color: var(--ink-2);
+    font-size: calc(17px * var(--fscale));
+    line-height: 1.65;
+  }
+  .section p strong {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .section .ar-inline {
+    font-family: "Amiri", serif;
+    font-size: calc(22px * var(--fscale));
+    line-height: 1;
+    direction: rtl;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .section em { font-style: italic; }
+
+  /* ── Signature ────────────────────────────────────────────────── */
+  .signature {
+    margin: 72px -28px 72px;
+    padding: 56px 36px 44px;
+    background: var(--paper-2);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    text-align: center;
+  }
+  .signature-quote {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: calc(clamp(22px, 4.4vw, 26px) * var(--fscale));
+    line-height: 1.45;
+    color: var(--ink);
+    margin: 0 auto 32px;
+    text-wrap: balance;
+    max-width: 30ch;
+  }
+  .signature-quote em { font-style: normal; color: var(--accent); }
+  .signature-label {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── Deux exemples (mini-essais) ──────────────────────────────── */
+  .ex-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 28px 0 8px;
+  }
+  @media (max-width: 600px) {
+    .ex-grid { grid-template-columns: 1fr; }
+  }
+  .ex-card {
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 24px;
+  }
+  .ex-eyebrow {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .ex-ar {
+    font-family: "Amiri", serif;
+    font-size: calc(36px * var(--fscale));
+    direction: rtl;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .ex-tr {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: calc(15px * var(--fscale));
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .ex-card p {
+    color: var(--ink-2);
+    font-size: calc(15.5px * var(--fscale));
+    line-height: 1.65;
+    margin-bottom: 12px;
+  }
+  .ex-sig {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dotted var(--rule);
+    font-style: italic;
+    color: var(--ink) !important;
+  }
+
+  /* ── Méthode 11 (liste compacte, filets pointillés) ───────────── */
+  .methode {
+    list-style: none;
+    padding: 0;
+    margin: 28px 0 0;
+  }
+  .methode-item {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 18px;
+    padding: 22px 0;
+    border-bottom: 1px dotted var(--rule);
+    align-items: start;
+  }
+  .methode-item:first-child {
+    border-top: 1px dotted var(--rule);
+  }
+  .methode-num {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding-top: 4px;
+    text-align: right;
+  }
+  .methode-titre {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: calc(17px * var(--fscale));
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .methode-desc {
+    color: var(--ink-2);
+    font-size: calc(14.5px * var(--fscale));
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  /* ── Closing block + CTA ──────────────────────────────────────── */
+  .closing {
+    margin: 96px -28px 56px;
+    padding: 80px 36px 88px;
+    background: var(--ink);
+    color: var(--paper);
+    text-align: center;
+  }
+  .closing-label {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 24px;
+  }
+  html[data-theme="dark"] .closing-label { color: rgba(43,31,21,0.55); }
+  .closing-q {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: calc(clamp(22px, 4.6vw, 28px) * var(--fscale));
+    line-height: 1.4;
+    color: var(--paper);
+    margin: 0 auto 36px;
+    max-width: 22ch;
+    text-wrap: balance;
+  }
+  .closing-cta {
+    display: inline-block;
+    padding: 13px 32px;
+    background: transparent;
+    border: 1px solid var(--paper);
+    color: var(--paper);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 180ms ease, color 180ms ease;
+  }
+  .closing-cta:hover {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  /* ── Footer ───────────────────────────────────────────────────── */
+  .footer {
+    text-align: center;
+    font-family: "Newsreader", serif;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .footer .sep { margin: 0 8px; opacity: 0.6; }
+
+  /* ── Reveal ───────────────────────────────────────────────────── */
+  .reveal { opacity: 0; transform: translateY(8px); transition: opacity 520ms ease, transform 520ms ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ── Theme toggle (pastille opaque, comme l'app) ─────────────── */
+  .theme-toggle {
+    position: fixed;
+    top: 16px; right: 16px;
+    z-index: 60;
+    width: 34px; height: 34px;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0; margin: 0;
+    background: var(--paper);
+    border: 0;
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px var(--rule);
+    color: var(--muted);
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: color 180ms ease;
+  }
+  .theme-toggle:hover { color: var(--accent); }
+  .theme-toggle svg { width: 18px; height: 18px; display: block; }
+  .theme-toggle .icon-sun,
+  .theme-toggle .icon-moon { display: none; }
+  html[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+  html:not([data-theme="dark"]) .theme-toggle .icon-moon { display: block; }
+
+  /* ── Mobile ──────────────────────────────────────────────────── */
+  @media (max-width: 480px) {
+    .shell { padding: 60px 22px 64px; }
+    .signature, .closing { margin-left: -22px; margin-right: -22px; padding-left: 28px; padding-right: 28px; }
+    .closing { padding: 64px 28px 72px; }
+    body { font-size: calc(17px * var(--fscale)); }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Basculer la vue">
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20 14.4A8 8 0 0 1 9.6 4 6.5 6.5 0 1 0 20 14.4Z"/>
+  </svg>
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.1"/>
+    <path d="M12 2.6v2.3 M12 19.1v2.3 M2.6 12h2.3 M19.1 12h2.3 M5.2 5.2l1.6 1.6 M17.2 17.2l1.6 1.6 M18.8 5.2l-1.6 1.6 M6.8 17.2l-1.6 1.6"/>
+  </svg>
+</button>
+
+<div class="shell">
+
+  <a class="essay-home" href="./" aria-label="Retour à l'accueil">
+    <span class="eh-seal" aria-hidden="true">ت</span>
+    <span class="eh-rule" aria-hidden="true"></span>
+    <span class="eh-name">Intraduire</span>
+  </a>
+
+  <div class="eyebrow reveal">Intraduire · à propos</div>
+  <h1 class="title reveal"><em>À&nbsp;propos</em> <span class="gloss">— la méthode.</span></h1>
+
+  <article>
+
+    <section class="section reveal">
+      <p>Quand on traduit <span class="ar-inline">الصَّبْر</span> par « patience », on perd quelque chose d'essentiel. Quand on traduit <span class="ar-inline">الإيمان</span> par « foi », on importe avec le mot vingt siècles de théologie chrétienne qui n'ont rien à voir avec la racine arabe. <strong>La traduction ne trahit pas par malveillance. Elle trahit par pauvreté.</strong></p>
+      <p>Intraduire est un projet éducatif qui part d'une conviction simple : la langue arabe coranique ne se traduit pas, elle se révèle. Chaque mot porte dans ses trois lettres racines un monde sémantique que les dictionnaires bilingues ne font qu'effleurer.</p>
+    </section>
+
+    <aside class="signature reveal" aria-label="Phrase signature">
+      <p class="signature-quote">« <em>Intraduire</em> » est volontairement ambigu, entre <em>traduire</em> et <em>introduire</em>. On introduit le lecteur dans la langue, pas seulement dans le mot.</p>
+      <div class="signature-label">Phrase signature</div>
+    </aside>
+
+    <section class="section reveal">
+      <div class="running-head"><span>I · La racine d'abord</span><span class="rh-rule"></span></div>
+      <p>Chaque mot arabe porte son sens dans ses trois lettres fondamentales. On ne traduit pas le mot, on traduit la racine. Elle est la vérité première, avant tous les dictionnaires.</p>
+    </section>
+
+    <section class="section reveal">
+      <div class="running-head"><span>II · Le contexte coranique</span><span class="rh-rule"></span></div>
+      <p>Un verset révèle ce qu'aucun dictionnaire ne dit. Le mot vit dans son usage, pas dans sa définition. La périodisation mecquoise ou médinoise change tout au sens.</p>
+    </section>
+
+    <section class="section reveal">
+      <div class="running-head"><span>III · Refuser la traduction de confort</span><span class="rh-rule"></span></div>
+      <p>« Foi », « patience », « doute » : ces mots français trahissent. On cherche la formule qui transmet la sensation, pas seulement le concept. Le français doit ressentir ce que l'arabe fait ressentir.</p>
+    </section>
+
+    <section class="section reveal">
+      <div class="running-head"><span>Deux exemples</span><span class="rh-rule"></span></div>
+      <div class="ex-grid">
+        <div class="ex-card">
+          <div class="ex-eyebrow">Épisode 01</div>
+          <div class="ex-ar">الإيمان</div>
+          <div class="ex-tr">al-îmân</div>
+          <p>Sa racine, <span class="ar-inline">أ · م · ن</span>, donne à la fois « sécurité », « confiance accordée » et « celui qui est fiable ». Croire en arabe coranique, c'est littéralement entrer dans un état de sécurité. Pas un acte intellectuel : un état d'être.</p>
+          <p class="ex-sig">L'îmân n'est pas « croire malgré le doute ». C'est habiter une sécurité si profonde qu'elle devient ta demeure.</p>
+        </div>
+        <div class="ex-card">
+          <div class="ex-eyebrow">Épisode 02</div>
+          <div class="ex-ar">الرَّيْب</div>
+          <div class="ex-tr">al-rayb</div>
+          <p>Descartes a fait du doute une méthode intellectuelle respectable. Le <em>rayb</em> arabe en est l'opposé existentiel : sa racine évoque ce qui trouble, altère, souille. Dans At-Tawba, le verbe <span class="ar-inline">يَتَرَدَّدُونَ</span> confirme : prison circulaire, pas questionnement ouvert.</p>
+          <p class="ex-sig">Le rayb ne doute pas, il corrode. Il attaque la substance même de la confiance.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="running-head"><span>La méthode, en onze étapes</span><span class="rh-rule"></span></div>
+      <ol class="methode">
+        <li class="methode-item">
+          <span class="methode-num">I</span>
+          <div>
+            <div class="methode-titre">La racine</div>
+            <p class="methode-desc">Champ sémantique complet des trois lettres racines. Tous les mots dérivés et leurs sens. C'est ici que tout commence.</p>
+          </div>
+        </li>
+        <li class="methode-item">
+          <span class="methode-num">II</span>
+          <div>
+            <div class="methode-titre">La périodisation</div>
+            <p class="methode-desc">Mecquois ou médinois : cette distinction est fondamentale. Un même mot peut porter une charge existentielle à La Mecque et une dimension communautaire à Médine.</p>
+          </div>
+        </li>
+        <li class="methode-item">
+          <span class="methode-num">III</span>
+          <div>
+            <div class="methode-titre">Le contexte coranique</div>
+            <p class="methode-desc">Les occurrences les plus significatives dans le Coran. Un verset bien choisi vaut mieux qu'une page de dictionnaire.</p>
+          </div>
+        </li>
+        <li class="methode-item">
+          <span class="methode-num">IV</span>
+          <div>
+            <div class="methode-titre">L'usage prophétique</div>
+            <p class="methode-desc">Les hadiths éclairants. Le Prophète ﷺ était le premier interprète vivant du Coran. Son usage du mot est une preuve sémantique de premier ordre.</p>
+          </div>
+        </li>
+        <li class="methode-item">
+          <span class="methode-num">V</span>
+          <div>
+            <div class="methode-titre">Les faux amis</div>
+            <p class="methode-desc">La traduction courante en français, et pourquoi elle trahit le sens originel. Pas de polémique : une analyse chirurgicale.</p>
+          </div>
+        </li>
+        <li class="methode-item">
+          <span class="methode-num">VI</span>
+          <div>
+            <div class="methode-titre">Les autres mots insuffisants</div>
+            <p class="methode-desc">D'autres mots français que le lecteur pourrait spontanément associer, et pourquoi ils ratent également le sens. La compréhension par élimination est souvent la plus puissante.</p>
+          </div>
+        </li>
+        <li class="methode-item">
+          <span class="methode-num">VII</span>
+          <div>
+            <div class="methode-titre">L'antonyme coranique</div>
+            <p class="methode-desc">L'opposé existentiel tel que le Coran le construit. Les deux mots se définissent mutuellement. L'un éclaire l'autre.</p>
+          </div>
+        </li>
+        <li class="methode-item">
+          <span class="methode-num">VIII</span>
+          <div>
+            <div class="methode-titre">La sensation physique</div>
+            <p class="methode-desc">Le sabr est une digue. Le rayb est un vertige. L'îmân est un sol sous les pieds. Ancrer dans le corps ce que l'esprit peine à saisir.</p>
+          </div>
+        </li>
+        <li class="methode-item">
+          <span class="methode-num">IX</span>
+          <div>
+            <div class="methode-titre">La traduction juste</div>
+            <p class="methode-desc">Un mot, une formule, une image. Elle doit faire ressentir ce que l'arabe fait ressentir, pas juste le comprendre.</p>
+          </div>
+        </li>
+        <li class="methode-item">
+          <span class="methode-num">X</span>
+          <div>
+            <div class="methode-titre">La phrase signature</div>
+            <p class="methode-desc">Une phrase courte, forte, mémorable. Le cœur de l'épisode. Celle qu'on retient longtemps après avoir refermé la page.</p>
+          </div>
+        </li>
+        <li class="methode-item">
+          <span class="methode-num">XI</span>
+          <div>
+            <div class="methode-titre">La question de clôture</div>
+            <p class="methode-desc">Une question adressée au lecteur, sans réponse. Elle invite à l'introspection. Elle ouvre, elle ne ferme pas.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <aside class="closing reveal" aria-label="Invitation à explorer">
+      <div class="closing-label">Et toi —</div>
+      <p class="closing-q">Quel mot voudrais-tu approcher ?</p>
+      <a href="./" class="closing-cta">Révéler un mot</a>
+    </aside>
+
+    <footer class="footer">
+      Intraduire <span class="sep">·</span> projet éducatif <span class="sep">·</span> linguistique arabe coranique
+    </footer>
+
+  </article>
+</div>
+
+<script>
+  // Bascule clair / sombre
+  (function () {
+    var docEl = document.documentElement;
+    var btn = document.getElementById('theme-toggle');
+    function sync() {
+      var dark = docEl.getAttribute('data-theme') === 'dark';
+      btn.setAttribute('aria-label', dark ? 'Passer en vue claire' : 'Passer en vue sombre');
+      btn.setAttribute('aria-pressed', String(dark));
+    }
+    btn.addEventListener('click', function () {
+      var next = docEl.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      docEl.setAttribute('data-theme', next);
+      try { localStorage.setItem('intraduire-theme', next); } catch (e) {}
+      sync();
+    });
+    sync();
+  })();
+
+  // Reveal en cascade
+  document.querySelectorAll('.reveal').forEach(function (el, i) {
+    setTimeout(function () { el.classList.add('in'); }, 80 + i * 60);
+  });
+</script>
+
+</body>
+</html>

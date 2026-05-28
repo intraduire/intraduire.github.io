@@ -253,6 +253,41 @@
   .plume-go:hover { background: var(--ink); color: var(--paper); }
   .plume-go:disabled { opacity: 0.5; cursor: default; }
 
+  /* Lien discret sous le bouton RÉVÉLER → page À propos */
+  .plume-about {
+    display: block;
+    text-align: center;
+    margin-top: 14px;
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 0.5px;
+    transition: color 180ms ease;
+  }
+  .plume-about:hover { color: var(--accent); }
+
+  /* Footer minimal sur l'accueil */
+  .home-footer {
+    margin-top: 88px;
+    padding-top: 28px;
+    border-top: 1px dotted var(--rule);
+    text-align: center;
+    font-family: "Newsreader", serif;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .home-footer a {
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 0.5px;
+  }
+  .home-footer a:hover { color: var(--accent); }
+  .home-footer .sep { margin: 0 8px; opacity: 0.6; }
+
   .err {
     display: none;
     margin-top: 22px;
@@ -735,6 +770,7 @@
         spellcheck="false"
         aria-label="Saisir un mot arabe" />
       <button class="plume-go" id="plume-go" type="button">Révéler</button>
+      <a class="plume-about" href="a-propos.html">À propos · la méthode</a>
 
       <div class="err" id="err"></div>
 
@@ -744,6 +780,10 @@
         </div>
         <ul class="toc" id="toc"></ul>
       </div>
+
+      <footer class="home-footer">
+        <a href="a-propos.html">À propos</a> <span class="sep">·</span> projet éducatif
+      </footer>
     </div>
   </section>
 
