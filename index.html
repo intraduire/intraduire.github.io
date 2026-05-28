@@ -233,6 +233,26 @@
     text-align: right;
   }
 
+  /* Bouton principal sous la plume — CTA visible pour ceux qui ne pensent pas à Entrée */
+  .plume-go {
+    display: block;
+    margin: 18px auto 0;
+    padding: 13px 32px;
+    background: transparent;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: background 180ms ease, color 180ms ease;
+  }
+  .plume-go:hover { background: var(--ink); color: var(--paper); }
+  .plume-go:disabled { opacity: 0.5; cursor: default; }
+
   .err {
     display: none;
     margin-top: 22px;
@@ -714,7 +734,7 @@
         autocomplete="off"
         spellcheck="false"
         aria-label="Saisir un mot arabe" />
-      <div class="plume-hint">Entrée pour lire</div>
+      <button class="plume-go" id="plume-go" type="button">Révéler</button>
 
       <div class="err" id="err"></div>
 
@@ -1006,6 +1026,7 @@
     plume.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); startFlow(plume.value); }
     });
+    document.getElementById('plume-go').addEventListener('click', () => startFlow(plume.value));
 
     const backLink = document.getElementById('back-link');
     function goHome(e) {
@@ -1108,7 +1129,7 @@
         const texte = txt.value.trim();
         if (!texte) { statusEl.textContent = 'Écris ta nuance d’abord.'; txt.focus(); return; }
         sendBtn.disabled = true;
-        statusEl.textContent = 'Envoi…';
+        statusEl.textContent = 'On note…';
         try {
           // GAS POST suit un 302 qui perd le body → on passe par GET (params URL).
           const qs = new URLSearchParams({
@@ -1126,6 +1147,7 @@
             toggle.textContent = 'Merci, c’est noté.';
             toggle.disabled = true;
             toggle.setAttribute('aria-expanded', 'false');
+            statusEl.textContent = ''; // ceinture/bretelle : on vide le statut même si le formulaire est caché
           } else {
             statusEl.textContent = 'Échec, réessaie.';
             sendBtn.disabled = false;
