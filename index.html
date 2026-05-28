@@ -625,6 +625,7 @@
     max-width: 30rem; margin: 22px auto 0;
     text-align: left; display: grid; gap: 12px;
   }
+  .suggest-form[hidden] { display: none; } /* l'attribut HTML hidden doit gagner sur display:grid */
   .suggest-label {
     font-family: "JetBrains Mono", ui-monospace, monospace;
     font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted);
