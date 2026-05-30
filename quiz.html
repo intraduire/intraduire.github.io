@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Intraduire — Quiz</title>
+
+<script>
+  // Thème (clair/sombre) appliqué avant le paint
+  (function () {
+    try {
+      var t = localStorage.getItem('intraduire-theme');
+      if (t !== 'dark' && t !== 'light') {
+        t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Amiri:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+
+<style>
+  :root {
+    --paper:  #efe9d8;
+    --ink:    #2b1f15;
+    --ink-2:  #4e4338;
+    --muted:  #6a6253;
+    --accent: #8a3a1f;
+    --rule:   rgba(26,25,22,0.18);
+  }
+  [data-theme="dark"] {
+    --paper:  #15120d;
+    --ink:    #ece4d4;
+    --ink-2:  #c9c0ad;
+    --muted:  #8c8474;
+    --accent: #c2613a;
+    --rule:   rgba(236,228,212,0.14);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { overflow-x: hidden; scroll-behavior: smooth; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 18px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.001ms !important;
+      animation-duration: 0.001ms !important;
+    }
+  }
+
+  /* Header / Colophon */
+  header.top {
+    padding: 24px 24px 8px;
+    text-align: center;
+  }
+  .colophon {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 180ms ease;
+  }
+  .colophon:hover { opacity: 0.6; }
+  .colophon:hover .colo-seal { color: var(--accent); }
+  .colo-seal {
+    font-family: "Amiri", serif;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--ink);
+    direction: rtl;
+    transition: color 180ms ease;
+  }
+  .colo-rule {
+    width: 1px; height: 20px;
+    background: var(--accent);
+    display: inline-block;
+  }
+  .colo-name {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--ink);
+    padding-right: .28em;
+  }
+
+  /* Main */
+  main {
+    max-width: 38rem;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+    min-height: 70vh;
+    position: relative;
+  }
+
+  /* Progress bar */
+  .progress {
+    height: 2px;
+    background: var(--rule);
+    margin-bottom: 32px;
+    position: relative;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0;
+    background: var(--accent);
+    transition: width 380ms ease;
+  }
+
+  /* Question card */
+  .qcard {
+    opacity: 1;
+    transform: none;
+    transition: opacity 320ms ease, transform 320ms ease;
+  }
+  .qcard.out { opacity: 0; transform: translateY(8px); }
+
+  .qcount {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+    text-align: center;
+  }
+  .qword {
+    font-family: "Amiri", serif;
+    font-size: 92px;
+    line-height: 1;
+    text-align: center;
+    color: var(--ink);
+    direction: rtl;
+    margin: 8px 0 6px;
+  }
+  .qtr {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    font-size: 16px;
+    margin-bottom: 36px;
+  }
+  .qtext {
+    font-family: "Newsreader", serif;
+    font-size: 17px;
+    color: var(--ink-2);
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  /* Options */
+  .options {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .opt {
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 14px 20px;
+    font-family: "Newsreader", serif;
+    font-size: 17px;
+    color: var(--ink-2);
+    text-align: left;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: border-color 180ms ease, color 180ms ease, opacity 180ms ease, background 180ms ease;
+    position: relative;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--ink-2); color: var(--ink); }
+  .opt:disabled { cursor: default; }
+  .opt.right { border-color: var(--accent); color: var(--ink); }
+  .opt.wrong { opacity: 0.4; }
+  .opt.less { border-color: var(--accent); color: var(--ink); }
+  .opt.less::after {
+    content: "moins fausse";
+    position: absolute;
+    top: 50%; right: 14px;
+    transform: translateY(-50%);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--paper);
+    padding: 2px 6px;
+  }
+
+  /* Reveal */
+  .reveal {
+    margin-top: 28px;
+    padding-left: 20px;
+    border-left: 1px solid var(--accent);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 360ms ease, transform 360ms ease;
+  }
+  .reveal[data-show="true"] { opacity: 1; transform: none; }
+  .reveal p {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    color: var(--ink-2);
+    font-size: 17px;
+    line-height: 1.65;
+    margin: 0 0 16px;
+  }
+  .juste-label {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-right: 10px;
+  }
+  .juste {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* Next button */
+  .next-wrap { text-align: center; margin-top: 36px; min-height: 54px; }
+  .btn {
+    display: inline-block;
+    padding: 13px 28px;
+    background: transparent;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: background 180ms ease, color 180ms ease, opacity 220ms ease;
+  }
+  .btn[data-show="true"] { opacity: 1; pointer-events: auto; }
+  .btn:hover { background: var(--ink); color: var(--paper); }
+
+  /* End screen */
+  .end {
+    text-align: center;
+    padding: 24px 0;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 420ms ease, transform 420ms ease;
+  }
+  .end[data-show="true"] { opacity: 1; transform: none; }
+  .end-label {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .end-score {
+    font-family: "Amiri", serif;
+    font-size: 96px;
+    line-height: 1;
+    color: var(--ink);
+    margin: 0 0 6px;
+  }
+  .end-score small {
+    font-family: "Newsreader", serif;
+    font-size: 28px;
+    color: var(--muted);
+    font-style: italic;
+    margin-left: 4px;
+  }
+  .end-msg {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--ink-2);
+    max-width: 28em;
+    margin: 28px auto 40px;
+    line-height: 1.6;
+  }
+  .end .btn { opacity: 1; pointer-events: auto; padding: 15px 36px; font-size: 11px; }
+
+  /* Mobile */
+  @media (max-width: 480px) {
+    body { font-size: 17px; }
+    .qword { font-size: 72px; }
+    main { padding: 24px 24px 64px; }
+    .end-score { font-size: 80px; }
+    .opt { padding: 14px 18px; }
+    .opt.less::after { right: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="colophon" href="index.html" aria-label="Intraduire — accueil">
+    <span class="colo-seal" aria-hidden="true">ت</span>
+    <span class="colo-rule" aria-hidden="true"></span>
+    <span class="colo-name">Intraduire</span>
+  </a>
+</header>
+
+<main>
+  <div class="progress" aria-hidden="true"><div class="progress-bar" id="pbar"></div></div>
+
+  <section class="qcard" id="qcard">
+    <div class="qcount" id="qcount">Question 1 sur 5</div>
+    <div class="qword" id="qword"></div>
+    <div class="qtr" id="qtr"></div>
+    <p class="qtext" id="qtext">Ce mot veut dire…</p>
+    <div class="options" id="options" role="list"></div>
+    <div class="reveal" id="reveal" aria-live="polite">
+      <p id="rev-text"></p>
+      <div>
+        <span class="juste-label">Traduction juste</span>
+        <span class="juste" id="rev-juste"></span>
+      </div>
+    </div>
+    <div class="next-wrap">
+      <button class="btn" id="next" type="button">Question suivante</button>
+    </div>
+  </section>
+
+  <section class="end" id="end" hidden aria-live="polite">
+    <div class="end-label">Résultat</div>
+    <div class="end-score"><span id="end-num">0</span><small>/ 5</small></div>
+    <p class="end-msg">Peu importe ton score. Ces mots t'ont été traduits depuis des siècles. Tu n'es pas le seul à les avoir mal compris.</p>
+    <a href="index.html" class="btn">Découvrir le vrai sens, mot par mot</a>
+  </section>
+</main>
+
+<script>
+  const Q = [
+    {
+      ar: 'الصبر', tr: 'al-sabr',
+      options: ['La patience', 'La résignation', 'L’endurance', 'La persévérance'],
+      correct: 3,
+      reveal: 'La racine ص-ب-ر désigne la sève amère de l’aloès. Ce qui brûle et guérit quand même. الصبر c’est tenir, pas attendre.',
+      juste: 'La tenue'
+    },
+    {
+      ar: 'الإيمان', tr: 'al-îmân',
+      options: ['La foi', 'La croyance', 'La conviction', 'La certitude'],
+      correct: 0,
+      reveal: 'La racine أ-م-ن c’est la sécurité, l’abri. الإيمان n’est pas une opinion intellectuelle. C’est habiter une sécurité si profonde qu’elle devient ta demeure.',
+      juste: 'L’ancrage sécurisant'
+    },
+    {
+      ar: 'الرحمة', tr: 'al-rahma',
+      options: ['La miséricorde', 'La compassion', 'La bienveillance', 'L’amour divin'],
+      correct: 0,
+      reveal: 'La racine ر-ح-م c’est le mot رَحِم : l’utérus, la matrice. الرحمة c’est l’amour qui nourrit avant même que l’autre existe.',
+      juste: 'L’amour matriciel'
+    },
+    {
+      ar: 'التقوى', tr: 'al-taqwâ',
+      options: ['La piété', 'La crainte de Dieu', 'La dévotion', 'La vertu'],
+      correct: null, less: 0,
+      reveal: 'La racine و-ق-ي signifie protéger, faire bouclier. التقوى c’est se construire une armure intérieure. Pas la peur. La lucidité.',
+      juste: 'Le bouclier intérieur'
+    },
+    {
+      ar: 'الأمانة', tr: 'al-amâna',
+      options: ['L’honnêteté', 'La confiance', 'La fidélité', 'L’intégrité'],
+      correct: null, less: 0,
+      reveal: 'Les cieux, la terre et les montagnes ont refusé de la porter. L’être humain a accepté. الأمانة n’est pas une vertu. C’est un engagement cosmique.',
+      juste: 'Le dépôt sacré'
+    }
+  ];
+
+  const qcard    = document.getElementById('qcard');
+  const qcountEl = document.getElementById('qcount');
+  const qwordEl  = document.getElementById('qword');
+  const qtrEl    = document.getElementById('qtr');
+  const optsEl   = document.getElementById('options');
+  const revealEl = document.getElementById('reveal');
+  const revText  = document.getElementById('rev-text');
+  const revJuste = document.getElementById('rev-juste');
+  const nextBtn  = document.getElementById('next');
+  const pbar     = document.getElementById('pbar');
+  const endEl    = document.getElementById('end');
+  const endNum   = document.getElementById('end-num');
+
+  let idx = 0;
+  let score = 0;
+
+  function render() {
+    const q = Q[idx];
+    qcountEl.textContent = 'Question ' + (idx + 1) + ' sur ' + Q.length;
+    qwordEl.textContent  = q.ar;
+    qtrEl.textContent    = q.tr;
+    optsEl.innerHTML     = '';
+    q.options.forEach(function (label, i) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt';
+      b.textContent = label;
+      b.addEventListener('click', function () { pick(i); });
+      optsEl.appendChild(b);
+    });
+    revealEl.removeAttribute('data-show');
+    revText.textContent = '';
+    revJuste.textContent = '';
+    nextBtn.removeAttribute('data-show');
+    nextBtn.textContent = (idx === Q.length - 1) ? 'Voir mon résultat' : 'Question suivante';
+    pbar.style.width = (idx / Q.length * 100) + '%';
+    qcard.classList.remove('out');
+  }
+
+  function pick(i) {
+    const q = Q[idx];
+    const opts = optsEl.querySelectorAll('.opt');
+    opts.forEach(function (o) { o.disabled = true; });
+
+    if (q.correct !== null && q.correct !== undefined) {
+      // Question avec une bonne réponse
+      if (i === q.correct) {
+        opts[i].classList.add('right');
+        score++;
+      } else {
+        opts[i].classList.add('wrong');
+        opts[q.correct].classList.add('right');
+      }
+    } else {
+      // Aucune bonne réponse — toutes insuffisantes, on marque la "moins fausse"
+      if (i === q.less) {
+        opts[i].classList.add('less'); // l'utilisateur a choisi la moins fausse
+      } else {
+        opts[i].classList.add('wrong');
+        opts[q.less].classList.add('less');
+      }
+    }
+
+    revText.textContent = q.reveal;
+    revJuste.textContent = q.juste;
+    revealEl.setAttribute('data-show', 'true');
+    nextBtn.setAttribute('data-show', 'true');
+    pbar.style.width = ((idx + 1) / Q.length * 100) + '%';
+  }
+
+  function next() {
+    if (idx < Q.length - 1) {
+      qcard.classList.add('out');
+      setTimeout(function () { idx++; render(); }, 320);
+    } else {
+      qcard.classList.add('out');
+      setTimeout(function () {
+        qcard.style.display = 'none';
+        endNum.textContent = score;
+        endEl.hidden = false;
+        requestAnimationFrame(function () { endEl.setAttribute('data-show', 'true'); });
+        pbar.style.width = '100%';
+      }, 320);
+    }
+  }
+
+  nextBtn.addEventListener('click', next);
+  render();
+</script>
+</body>
+</html>
