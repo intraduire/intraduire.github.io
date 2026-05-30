@@ -6,6 +6,17 @@
 <title>Intraduire</title>
 
 <script>
+  // Redirige vers le quiz à la PREMIÈRE visite (avant tout rendu, pas de flash)
+  (function () {
+    try {
+      if (!localStorage.getItem('intraduire-quiz-seen')) {
+        location.replace('quiz.html');
+      }
+    } catch (e) {}
+  })();
+</script>
+
+<script>
   // Thème (clair/sombre) appliqué avant le paint pour éviter le flash
   (function () {
     try {
