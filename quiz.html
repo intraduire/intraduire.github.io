@@ -6,7 +6,7 @@
 <title>Intraduire — Quiz</title>
 
 <script>
-  // Thème (clair/sombre) appliqué avant le paint
+  // Thème (clair/sombre) + flag « quiz consulté »
   (function () {
     try {
       var t = localStorage.getItem('intraduire-theme');
@@ -17,7 +17,6 @@
     } catch (e) {
       document.documentElement.setAttribute('data-theme', 'light');
     }
-    // Marque le quiz comme consulté → l'accueil ne redirigera plus
     try { localStorage.setItem('intraduire-quiz-seen', '1'); } catch (e) {}
   })();
 </script>
@@ -103,7 +102,6 @@
     padding-right: .28em;
   }
 
-  /* Main */
   main {
     max-width: 38rem;
     margin: 0 auto;
@@ -129,7 +127,60 @@
     transition: width 380ms ease;
   }
 
-  /* Question card */
+  /* ────────────── Intro ────────────── */
+  .intro {
+    text-align: center;
+    padding: 8px 0;
+    opacity: 1;
+    transform: none;
+    transition: opacity 320ms ease, transform 320ms ease;
+  }
+  .intro.out { opacity: 0; transform: translateY(8px); }
+  .intro-eyebrow {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+  .intro-title {
+    font-family: "Newsreader", serif;
+    font-weight: 400;
+    font-size: clamp(34px, 7vw, 46px);
+    line-height: 1.15;
+    letter-spacing: -.005em;
+    color: var(--ink);
+    margin: 0 0 40px;
+  }
+  .intro-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .intro-body {
+    max-width: 30em;
+    margin: 0 auto;
+    text-align: left;
+  }
+  .intro-body p {
+    font-family: "Newsreader", serif;
+    color: var(--ink-2);
+    font-size: 17px;
+    line-height: 1.7;
+    margin: 0 0 1.2em;
+  }
+  .intro-body p.coda {
+    font-style: italic;
+    color: var(--ink);
+    border-left: 1px solid var(--accent);
+    padding-left: 16px;
+    margin-top: 28px;
+  }
+  .intro .start-wrap {
+    margin-top: 44px;
+  }
+
+  /* ────────────── Question ────────────── */
   .qcard {
     opacity: 1;
     transform: none;
@@ -220,13 +271,29 @@
     transition: opacity 360ms ease, transform 360ms ease;
   }
   .reveal[data-show="true"] { opacity: 1; transform: none; }
-  .reveal p {
+  .rev-verdict {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 9px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .rev-critique {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink);
+    line-height: 1.65;
+    margin: 0 0 20px;
+  }
+  .rev-text {
     font-family: "Newsreader", serif;
     font-style: italic;
     color: var(--ink-2);
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.65;
-    margin: 0 0 16px;
+    margin: 0 0 18px;
   }
   .juste-label {
     font-family: "JetBrains Mono", ui-monospace, monospace;
@@ -244,7 +311,7 @@
     color: var(--accent);
   }
 
-  /* Next button */
+  /* Button */
   .next-wrap { text-align: center; margin-top: 36px; min-height: 54px; }
   .btn {
     display: inline-block;
@@ -267,7 +334,7 @@
   .btn[data-show="true"] { opacity: 1; pointer-events: auto; }
   .btn:hover { background: var(--ink); color: var(--paper); }
 
-  /* End screen */
+  /* End */
   .end {
     text-align: center;
     padding: 24px 0;
@@ -307,12 +374,12 @@
     margin: 28px auto 40px;
     line-height: 1.6;
   }
-  .end .btn { opacity: 1; pointer-events: auto; padding: 15px 36px; font-size: 11px; }
+  .end .btn { opacity: 1; pointer-events: auto; padding: 15px 36px; }
 
-  /* Mobile */
   @media (max-width: 480px) {
     body { font-size: 17px; }
     .qword { font-size: 72px; }
+    .intro-title { font-size: 34px; }
     main { padding: 24px 24px 64px; }
     .end-score { font-size: 80px; }
     .opt { padding: 14px 18px; }
@@ -333,14 +400,29 @@
 <main>
   <div class="progress" aria-hidden="true"><div class="progress-bar" id="pbar"></div></div>
 
-  <section class="qcard" id="qcard">
+  <!-- Intro -->
+  <section class="intro" id="intro">
+    <div class="intro-eyebrow">Avant de commencer</div>
+    <h1 class="intro-title"><em>Une expérience.</em><br>Pas un test.</h1>
+    <div class="intro-body">
+      <p>Tu vas voir cinq mots arabes coraniques.<br>Pour chacun, plusieurs traductions françaises courantes te seront proposées. Toutes — ou presque — sont insuffisantes.</p>
+      <p>Ces traductions ont trahi le sens de ces mots pendant des siècles. Dans les écoles, dans les livres, dans les sermons.<br>Tu n'es pas seul à les avoir reçues. Tu n'es pas en faute.</p>
+      <p class="coda">Le quiz n'évalue pas ton savoir.<br>Il révèle l'écart.</p>
+    </div>
+    <div class="start-wrap"><button class="btn" id="start" type="button" data-show="true">Commencer</button></div>
+  </section>
+
+  <!-- Question card -->
+  <section class="qcard" id="qcard" hidden>
     <div class="qcount" id="qcount">Question 1 sur 5</div>
     <div class="qword" id="qword"></div>
     <div class="qtr" id="qtr"></div>
-    <p class="qtext" id="qtext">Ce mot veut dire…</p>
+    <p class="qtext">Ce mot veut dire…</p>
     <div class="options" id="options" role="list"></div>
     <div class="reveal" id="reveal" aria-live="polite">
-      <p id="rev-text"></p>
+      <div class="rev-verdict" id="rev-verdict"></div>
+      <p class="rev-critique" id="rev-critique"></p>
+      <p class="rev-text" id="rev-text"></p>
       <div>
         <span class="juste-label">Traduction juste</span>
         <span class="juste" id="rev-juste"></span>
@@ -351,6 +433,7 @@
     </div>
   </section>
 
+  <!-- End -->
   <section class="end" id="end" hidden aria-live="polite">
     <div class="end-label">Résultat</div>
     <div class="end-score"><span id="end-num">0</span><small>/ 5</small></div>
@@ -363,47 +446,76 @@
   const Q = [
     {
       ar: 'الصبر', tr: 'al-sabr',
-      options: ['La patience', 'La résignation', 'L’endurance', 'La persévérance'],
+      options: [
+        { label: 'La patience',     critique: 'La patience attend que ça passe. Le sabr ne passe pas — il traverse. C’est un travail, pas un repos.' },
+        { label: 'La résignation',  critique: 'La résignation accepte de subir. Le sabr refuse de se laisser dissoudre. Pas un consentement : une tension.' },
+        { label: 'L’endurance',     critique: 'Plus chaud que patience, mais l’endurance est sportive, neutre. Le sabr est moral, parfois douloureux jusqu’à la sève de l’aloès — il brûle et guérit en même temps.' },
+        { label: 'La persévérance', critique: 'Tu approches au plus près : la durée, la fermeté. Et le sabr y ajoute le corps — la sève qui résiste au feu, le geste qui tient quand tout s’effrite.' }
+      ],
       correct: 3,
-      reveal: 'La racine ص-ب-ر désigne la sève amère de l’aloès. Ce qui brûle et guérit quand même. الصبر c’est tenir, pas attendre.',
+      reveal: 'La racine ص-ب-ر désigne la sève amère de l’aloès. Ce qui brûle et guérit quand même. الصبر, c’est tenir, pas attendre.',
       juste: 'La tenue'
     },
     {
       ar: 'الإيمان', tr: 'al-îmân',
-      options: ['La foi', 'La croyance', 'La conviction', 'La certitude'],
+      options: [
+        { label: 'La foi',       critique: 'C’est la traduction d’usage. Mais en français, “foi” traîne deux mille ans de théologie chrétienne — l’acte de croire malgré la raison. L’îmân, lui, est entrer dans une sécurité d’évidence. Pas se forcer à croire : déjà se sentir abrité.' },
+        { label: 'La croyance',  critique: 'Une croyance est une opinion qu’on défend. L’îmân est un état qu’on habite. Pas une idée qu’on a — une demeure dans laquelle on entre.' },
+        { label: 'La conviction', critique: 'La conviction se défend, s’argumente. L’îmân repose. Il n’a plus besoin d’argument : il a trouvé l’abri.' },
+        { label: 'La certitude', critique: 'La certitude est intellectuelle, parfois rigide. L’îmân est doux, vivant, comme une racine qui tient même quand tout tremble.' }
+      ],
       correct: 0,
-      reveal: 'La racine أ-م-ن c’est la sécurité, l’abri. الإيمان n’est pas une opinion intellectuelle. C’est habiter une sécurité si profonde qu’elle devient ta demeure.',
+      reveal: 'La racine أ-م-ن, c’est la sécurité, l’abri. L’îmân n’est pas une opinion intellectuelle. C’est habiter une sécurité si profonde qu’elle devient ta demeure.',
       juste: 'L’ancrage sécurisant'
     },
     {
       ar: 'الرحمة', tr: 'al-rahma',
-      options: ['La miséricorde', 'La compassion', 'La bienveillance', 'L’amour divin'],
+      options: [
+        { label: 'La miséricorde',  critique: 'C’est l’équivalent classique. Mais “miséricorde” évoque le pardon descendu d’en haut. La rahma vient de رَحِم, l’utérus — pas un pardon, une nourriture qui précède même la demande.' },
+        { label: 'La compassion',   critique: 'La compassion regarde de loin. La rahma porte de l’intérieur. C’est l’organe qui contient, pas le sentiment qui plaint.' },
+        { label: 'La bienveillance', critique: 'La bienveillance est polie, sociale. La rahma est viscérale, charnelle. Elle vient des entrailles, pas des manières.' },
+        { label: 'L’amour divin',    critique: 'Trop abstrait, trop haut. La rahma a un corps — l’utérus — et un mouvement : nourrir avant même que l’autre n’existe.' }
+      ],
       correct: 0,
-      reveal: 'La racine ر-ح-م c’est le mot رَحِم : l’utérus, la matrice. الرحمة c’est l’amour qui nourrit avant même que l’autre existe.',
+      reveal: 'La racine ر-ح-م, c’est رَحِم : l’utérus, la matrice. الرحمة, c’est l’amour qui nourrit avant même que l’autre existe.',
       juste: 'L’amour matriciel'
     },
     {
       ar: 'التقوى', tr: 'al-taqwâ',
-      options: ['La piété', 'La crainte de Dieu', 'La dévotion', 'La vertu'],
+      options: [
+        { label: 'La piété',           critique: 'Tu approches le moins faux. Piété évoque la dévotion sentimentale, la posture religieuse. Taqwâ n’est ni un sentiment, ni une posture — c’est une lucidité armée, un bouclier qu’on se construit en silence.' },
+        { label: 'La crainte de Dieu', critique: 'La crainte écrase, paralyse. Taqwâ se tient debout, vigilante. C’est l’inverse de la peur : une garde lucide, pas une fuite.' },
+        { label: 'La dévotion',        critique: 'La dévotion est extérieure, performative. Taqwâ est intérieure, silencieuse. Personne ne voit ton bouclier — et c’est précisément pour ça qu’il tient.' },
+        { label: 'La vertu',           critique: 'La vertu est une qualité morale qu’on possède. Taqwâ est une posture existentielle qu’on tient. Pas un trait — une garde.' }
+      ],
       correct: null, less: 0,
-      reveal: 'La racine و-ق-ي signifie protéger, faire bouclier. التقوى c’est se construire une armure intérieure. Pas la peur. La lucidité.',
+      reveal: 'La racine و-ق-ي signifie protéger, faire bouclier. التقوى, c’est se construire une armure intérieure. Pas la peur. La lucidité.',
       juste: 'Le bouclier intérieur'
     },
     {
       ar: 'الأمانة', tr: 'al-amâna',
-      options: ['L’honnêteté', 'La confiance', 'La fidélité', 'L’intégrité'],
+      options: [
+        { label: 'L’honnêteté',  critique: 'Tu approches le moins faux. L’honnêteté est sociale — ne pas mentir. L’amâna est cosmique — porter un dépôt qu’on n’a pas créé. Les cieux, la terre et les montagnes ont refusé de le porter ; l’humain a accepté.' },
+        { label: 'La confiance', critique: 'La confiance est une relation entre deux. L’amâna est un poids accepté, un fardeau qu’on porte seul. Pas une émotion : un engagement.' },
+        { label: 'La fidélité',  critique: 'La fidélité concerne une personne, un lien. L’amâna concerne l’existence elle-même. Elle dépasse l’individu et le couple.' },
+        { label: 'L’intégrité',  critique: 'L’intégrité protège l’unité de soi. L’amâna implique l’autre, le confié, le sacré. Elle te déborde.' }
+      ],
       correct: null, less: 0,
       reveal: 'Les cieux, la terre et les montagnes ont refusé de la porter. L’être humain a accepté. الأمانة n’est pas une vertu. C’est un engagement cosmique.',
       juste: 'Le dépôt sacré'
     }
   ];
 
+  const intro    = document.getElementById('intro');
+  const startBtn = document.getElementById('start');
   const qcard    = document.getElementById('qcard');
   const qcountEl = document.getElementById('qcount');
   const qwordEl  = document.getElementById('qword');
   const qtrEl    = document.getElementById('qtr');
   const optsEl   = document.getElementById('options');
   const revealEl = document.getElementById('reveal');
+  const revVerd  = document.getElementById('rev-verdict');
+  const revCrit  = document.getElementById('rev-critique');
   const revText  = document.getElementById('rev-text');
   const revJuste = document.getElementById('rev-juste');
   const nextBtn  = document.getElementById('next');
@@ -414,21 +526,32 @@
   let idx = 0;
   let score = 0;
 
+  function start() {
+    intro.classList.add('out');
+    setTimeout(function () {
+      intro.hidden = true;
+      qcard.hidden = false;
+      render();
+    }, 320);
+  }
+
   function render() {
     const q = Q[idx];
     qcountEl.textContent = 'Question ' + (idx + 1) + ' sur ' + Q.length;
     qwordEl.textContent  = q.ar;
     qtrEl.textContent    = q.tr;
     optsEl.innerHTML     = '';
-    q.options.forEach(function (label, i) {
+    q.options.forEach(function (opt, i) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'opt';
-      b.textContent = label;
+      b.textContent = opt.label;
       b.addEventListener('click', function () { pick(i); });
       optsEl.appendChild(b);
     });
     revealEl.removeAttribute('data-show');
+    revVerd.textContent = '';
+    revCrit.textContent = '';
     revText.textContent = '';
     revJuste.textContent = '';
     nextBtn.removeAttribute('data-show');
@@ -442,26 +565,32 @@
     const opts = optsEl.querySelectorAll('.opt');
     opts.forEach(function (o) { o.disabled = true; });
 
+    let verdict;
     if (q.correct !== null && q.correct !== undefined) {
-      // Question avec une bonne réponse
       if (i === q.correct) {
         opts[i].classList.add('right');
         score++;
+        verdict = 'Pourquoi celle-ci est la plus juste';
       } else {
         opts[i].classList.add('wrong');
         opts[q.correct].classList.add('right');
+        verdict = 'Pourquoi cette traduction ne va pas';
       }
     } else {
-      // Aucune bonne réponse — toutes insuffisantes, on marque la "moins fausse"
+      // Aucune correcte : option « moins fausse »
       if (i === q.less) {
-        opts[i].classList.add('less'); // l'utilisateur a choisi la moins fausse
+        opts[i].classList.add('less');
+        verdict = 'Tu approches — mais elle reste insuffisante';
       } else {
         opts[i].classList.add('wrong');
         opts[q.less].classList.add('less');
+        verdict = 'Pourquoi cette traduction ne va pas';
       }
     }
 
-    revText.textContent = q.reveal;
+    revVerd.textContent  = verdict;
+    revCrit.textContent  = q.options[i].critique;
+    revText.textContent  = q.reveal;
     revJuste.textContent = q.juste;
     revealEl.setAttribute('data-show', 'true');
     nextBtn.setAttribute('data-show', 'true');
@@ -484,8 +613,8 @@
     }
   }
 
+  startBtn.addEventListener('click', start);
   nextBtn.addEventListener('click', next);
-  render();
 </script>
 </body>
 </html>
