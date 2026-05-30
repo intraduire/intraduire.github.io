@@ -762,7 +762,7 @@
   <section class="screen active" id="screen-home" aria-label="Accueil">
     <div class="shell">
       <div class="colophon-wrap">
-        <span class="colophon" role="img" aria-label="Intraduire — essai sur les mots intraduisibles">
+        <span class="colophon" role="img" aria-label="Intraduire, essai sur les mots intraduisibles">
           <span class="col-seal" aria-hidden="true">ت</span>
           <span class="col-rule" aria-hidden="true"></span>
           <span class="col-text">
@@ -802,7 +802,7 @@
   <section class="screen" id="screen-loading" aria-label="Chargement">
     <div class="loader">
       <div class="loader-arabic" id="loader-ar"></div>
-      <div class="loader-phrase" id="loader-phrase" aria-live="polite">— On ouvre le manuscrit —</div>
+      <div class="loader-phrase" id="loader-phrase" aria-live="polite">On ouvre le manuscrit…</div>
       <div class="loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
   </section>
@@ -934,17 +934,17 @@
         ul.appendChild(li);
       });
       document.getElementById('index-count').textContent =
-        `Index — ${sorted.length} mot${sorted.length > 1 ? 's' : ''}`;
+        `Index · ${sorted.length} mot${sorted.length > 1 ? 's' : ''}`;
       document.getElementById('index-section').style.display = '';
     }
 
     // ── Phrases de chargement (défilent jusqu'à la réponse) ─────
     const phrases = [
-      '— On ouvre le manuscrit —',
-      '— Lecture de la racine —',
-      '— Mise en contexte —',
-      '— Recueil des nuances —',
-      '— Polissage —'
+      'On ouvre le manuscrit…',
+      'Lecture de la racine…',
+      'Mise en contexte…',
+      'Recueil des nuances…',
+      'Polissage…'
     ];
     let phraseTimer = null;
     function startPhrases() {
@@ -994,7 +994,7 @@
     }
     function closingHTML(q) {
       return `<aside class="closing reveal" aria-label="Question de clôture">
-        <div class="closing-label">Et toi —</div>
+        <div class="closing-label">Et toi…</div>
         <p class="closing-q">${esc(q)}</p>
       </aside>`;
     }
