@@ -429,11 +429,13 @@
   @media (max-width: 520px) {
     .fr-trad, .fr-sig { margin-left: 0; }
     .fr-peri { margin-left: 0; margin-top: 6px; }
+    .share-row { margin-top: 18px; }
+    .share-btn { padding: 12px 26px; font-size: 10.5px; }
   }
 
   /* ── Partage de l'essai ──────────────────────────────────────── */
   .share-row {
-    margin: 44px 0 0;
+    margin: 28px 0 0;
     display: flex;
     justify-content: center;
   }
@@ -1038,19 +1040,6 @@
 
       <article id="ess-article"></article>
 
-      <div class="share-row reveal">
-        <button class="share-btn" id="share-btn" type="button" aria-label="Partager ce mot">
-          <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <path d="M8.6 10.5 15.4 6.5"/>
-            <path d="M8.6 13.5 15.4 17.5"/>
-          </svg>
-          Partager
-        </button>
-      </div>
-
       <section class="suggest reveal" id="suggest" hidden aria-label="Proposer une nuance">
         <button class="suggest-toggle" id="suggest-toggle" type="button" aria-expanded="false" aria-controls="suggest-form">Tu traduirais autrement&nbsp;?</button>
         <form class="suggest-form" id="suggest-form" hidden>
@@ -1064,6 +1053,19 @@
           </div>
         </form>
       </section>
+
+      <div class="share-row reveal">
+        <button class="share-btn" id="share-btn" type="button" aria-label="Partager ce mot">
+          <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <path d="M8.6 10.5 15.4 6.5"/>
+            <path d="M8.6 13.5 15.4 17.5"/>
+          </svg>
+          Partager
+        </button>
+      </div>
     </div>
   </section>
 
