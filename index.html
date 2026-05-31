@@ -1352,10 +1352,10 @@
     async function doShare() {
       if (!currentMot) return;
       const tr = document.getElementById('ess-title').textContent || currentMot;
-      // URL courte sur le domaine Pages. Les balises Open Graph statiques du
-      // <head> donnent une preview site-level cohérente sur les plateformes
-      // qui en génèrent. Le texte du message porte la spécificité du mot.
-      const url = `https://intraduire.github.io/#${encodeURIComponent(currentMot)}`;
+      // URL courte sur le domaine Pages, avec le mot arabe en clair dans le
+      // hash plutôt qu'en pourcent-encoding. Les navigateurs et apps modernes
+      // gèrent l'unicode dans les URL et l'affichent lisible.
+      const url = `https://intraduire.github.io/#${currentMot}`;
       const title = `Intraduire · ${tr}`;
       const text = `« ${tr} » sur Intraduire`;
       if (navigator.share) {
