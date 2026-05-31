@@ -1334,7 +1334,10 @@
     async function doShare() {
       if (!currentMot) return;
       const tr = document.getElementById('ess-title').textContent || currentMot;
-      const url = location.origin + location.pathname + '#' + encodeURIComponent(currentMot);
+      // URL de partage : passe par le GAS qui sert une page Open Graph,
+      // pour que iMessage, WhatsApp, Slack, Telegram, etc. génèrent une
+      // preview riche, puis redirige vers intraduire.github.io/#mot.
+      const url = `${GAS_URL}?share=${encodeURIComponent(currentMot)}`;
       const title = `Intraduire · ${tr}`;
       const text = `« ${tr} » sur Intraduire`;
       if (navigator.share) {
