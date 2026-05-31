@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Intraduire</title>
 
+<meta name="description" content="Essai sur les mots arabes que le français ne sait pas dire." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Intraduire" />
+<meta property="og:locale" content="fr_FR" />
+<meta property="og:title" content="Intraduire" />
+<meta property="og:description" content="Essai sur les mots arabes que le français ne sait pas dire." />
+<meta property="og:url" content="https://intraduire.github.io/" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Intraduire" />
+<meta name="twitter:description" content="Essai sur les mots arabes que le français ne sait pas dire." />
+
 <script>
   // Redirige vers le quiz à la PREMIÈRE visite (avant tout rendu, pas de flash).
   // Exception : si l'URL porte un hash (lien partagé vers un mot), on saute le quiz
@@ -1339,10 +1350,10 @@
     async function doShare() {
       if (!currentMot) return;
       const tr = document.getElementById('ess-title').textContent || currentMot;
-      // URL de partage : passe par le GAS qui sert une page Open Graph,
-      // pour que iMessage, WhatsApp, Slack, Telegram, etc. génèrent une
-      // preview riche, puis redirige vers intraduire.github.io/#mot.
-      const url = `${GAS_URL}?share=${encodeURIComponent(currentMot)}`;
+      // URL courte sur le domaine Pages. Les balises Open Graph statiques du
+      // <head> donnent une preview site-level cohérente sur les plateformes
+      // qui en génèrent. Le texte du message porte la spécificité du mot.
+      const url = `https://intraduire.github.io/#${encodeURIComponent(currentMot)}`;
       const title = `Intraduire · ${tr}`;
       const text = `« ${tr} » sur Intraduire`;
       if (navigator.share) {
