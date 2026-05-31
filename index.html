@@ -6,10 +6,14 @@
 <title>Intraduire</title>
 
 <script>
-  // Redirige vers le quiz à la PREMIÈRE visite (avant tout rendu, pas de flash)
+  // Redirige vers le quiz à la PREMIÈRE visite (avant tout rendu, pas de flash).
+  // Exception : si l'URL porte un hash (lien partagé vers un mot), on saute le quiz
+  // et on marque quiz-seen, pour que les visites suivantes ne soient pas perturbées.
   (function () {
     try {
-      if (!localStorage.getItem('intraduire-quiz-seen')) {
+      if (location.hash) {
+        localStorage.setItem('intraduire-quiz-seen', '1');
+      } else if (!localStorage.getItem('intraduire-quiz-seen')) {
         location.replace('quiz.html');
       }
     } catch (e) {}
@@ -279,6 +283,191 @@
     transition: color 180ms ease;
   }
   .plume-about:hover { color: var(--accent); }
+
+  /* Bascule de mode (arabe / français), au-dessus de la plume */
+  .mode-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 0 18px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .mode-pill {
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px 2px;
+    letter-spacing: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    text-transform: inherit;
+    border-bottom: 1px solid transparent;
+    transition: color 180ms ease, border-color 180ms ease;
+  }
+  .mode-pill:hover { color: var(--ink); }
+  .mode-pill.active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+  .mode-sep { color: var(--muted); opacity: 0.6; }
+
+  /* Plume en mode français : LTR, police de lecture, taille un poil plus petite */
+  .plume[data-mode="fr"] {
+    direction: ltr;
+    text-align: left;
+    font-family: "Newsreader", Georgia, serif;
+    font-style: italic;
+    font-size: calc(22px * var(--fscale));
+  }
+
+  /* ── Écran « résultats français » ─────────────────────────────── */
+  .fr-frame { margin: 14px 0 32px; text-align: center; }
+  .fr-lede {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: calc(20px * var(--fscale));
+    color: var(--ink-2);
+    margin: 0;
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+  .fr-lede strong { font-style: normal; color: var(--ink); font-weight: 500; }
+  .fr-lede .fr-term { font-style: normal; color: var(--accent); }
+  .fr-empty {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: calc(17px * var(--fscale));
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .fr-list { list-style: none; padding: 0; margin: 0; }
+  .fr-card {
+    display: block;
+    padding: 22px 4px 26px;
+    border-bottom: 1px dotted var(--rule);
+    cursor: pointer;
+    transition: color 180ms ease;
+  }
+  .fr-card:first-child { border-top: 1px dotted var(--rule); }
+  .fr-card:hover .fr-translit { color: var(--accent); }
+  .fr-head {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+  .fr-num {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+  .fr-translit {
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: calc(19px * var(--fscale));
+    color: var(--ink);
+    transition: color 180ms ease;
+  }
+  .fr-ar {
+    font-family: "Amiri", serif;
+    font-size: calc(24px * var(--fscale));
+    line-height: 1;
+    direction: rtl;
+    color: var(--ink);
+  }
+  .fr-trad {
+    margin: 0 0 8px 42px;
+    font-family: "Newsreader", serif;
+    font-size: calc(17px * var(--fscale));
+    color: var(--ink-2);
+  }
+  .fr-sig {
+    margin: 0 0 8px 42px;
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: calc(15px * var(--fscale));
+    color: var(--muted);
+  }
+  .fr-peri {
+    display: inline-block;
+    margin-left: 42px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .fr-after { min-height: 1px; }
+  .fr-contrast {
+    margin: 36px 0 0;
+    text-align: center;
+    font-family: "Newsreader", serif;
+    font-style: italic;
+    font-size: calc(16px * var(--fscale));
+    color: var(--muted);
+    text-wrap: balance;
+  }
+  @media (max-width: 520px) {
+    .fr-trad, .fr-sig { margin-left: 0; }
+    .fr-peri { margin-left: 0; margin-top: 6px; }
+  }
+
+  /* ── Partage de l'essai ──────────────────────────────────────── */
+  .share-row {
+    margin: 44px 0 0;
+    display: flex;
+    justify-content: center;
+  }
+  .share-btn {
+    background: transparent;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    padding: 11px 26px;
+    border-radius: 2px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: background 180ms ease, color 180ms ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .share-btn:hover { background: var(--ink); color: var(--paper); }
+  .share-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; }
+
+  .share-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 36px;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    border-radius: 2px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease, transform 200ms ease;
+    z-index: 1000;
+  }
+  .share-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 
   /* Footer minimal sur l'accueil */
   .home-footer {
@@ -755,6 +944,7 @@
 </button>
 
 <div class="progress" id="progress"></div>
+<div class="share-toast" id="share-toast" role="status" aria-live="polite"></div>
 
 <div class="stage">
 
@@ -770,6 +960,12 @@
             <span class="col-tag">essai sur les mots intraduisibles</span>
           </span>
         </span>
+      </div>
+
+      <div class="mode-switch" role="tablist" aria-label="Mode de saisie">
+        <button class="mode-pill active" id="mode-ar" type="button" role="tab" aria-selected="true">en arabe</button>
+        <span class="mode-sep" aria-hidden="true">·</span>
+        <button class="mode-pill" id="mode-fr" type="button" role="tab" aria-selected="false">Je pense en français</button>
       </div>
 
       <input
@@ -826,6 +1022,19 @@
 
       <article id="ess-article"></article>
 
+      <div class="share-row reveal">
+        <button class="share-btn" id="share-btn" type="button" aria-label="Partager ce mot">
+          <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <path d="M8.6 10.5 15.4 6.5"/>
+            <path d="M8.6 13.5 15.4 17.5"/>
+          </svg>
+          Partager
+        </button>
+      </div>
+
       <section class="suggest reveal" id="suggest" hidden aria-label="Proposer une nuance">
         <button class="suggest-toggle" id="suggest-toggle" type="button" aria-expanded="false" aria-controls="suggest-form">Tu traduirais autrement&nbsp;?</button>
         <form class="suggest-form" id="suggest-form" hidden>
@@ -842,6 +1051,23 @@
     </div>
   </section>
 
+  <!-- ════════════ RÉSULTAT, RECHERCHE FRANÇAISE ════════════ -->
+  <section class="screen" id="screen-fr" aria-label="Résultats de la recherche française">
+    <div class="shell">
+
+      <a class="essay-home" id="fr-back" role="link" tabindex="0" aria-label="Retour à l'accueil">
+        <span class="eh-seal" aria-hidden="true">ت</span>
+        <span class="eh-rule" aria-hidden="true"></span>
+        <span class="eh-name">Intraduire</span>
+      </a>
+
+      <div class="essay-eyebrow" id="fr-eyebrow"></div>
+      <div class="fr-frame" id="fr-frame"></div>
+      <ul class="fr-list" id="fr-list"></ul>
+      <div class="fr-after" id="fr-after"></div>
+    </div>
+  </section>
+
 </div>
 
 <!-- Flow controller (vanilla) — backend repris de intraduire-agent.html -->
@@ -854,6 +1080,7 @@
       home: document.getElementById('screen-home'),
       loading: document.getElementById('screen-loading'),
       essay: document.getElementById('screen-essay'),
+      fr: document.getElementById('screen-fr'),
     };
     const plume = document.getElementById('plume');
     const errEl = document.getElementById('err');
@@ -1070,14 +1297,209 @@
       resetEssayReveal();
       show('essay');
       requestAnimationFrame(() => requestAnimationFrame(revealEssay));
+      setHashFor(currentMot);
       chargerListe(); // un nouveau mot a pu être ajouté à l'index
+    }
+
+    // ── Lien profond + partage ─────────────────────────────────
+    function setHashFor(mot) {
+      if (!mot) return;
+      try {
+        const h = '#' + encodeURIComponent(mot);
+        if (location.hash !== h) history.replaceState({}, '', h);
+      } catch (e) {}
+    }
+    function clearHash() {
+      try {
+        if (location.hash) history.replaceState({}, '', location.pathname + location.search);
+      } catch (e) {}
+    }
+    function readHash() {
+      let h = (location.hash || '').replace(/^#/, '');
+      if (!h) return '';
+      try { h = decodeURIComponent(h); } catch (e) {}
+      return h.trim();
+    }
+
+    const shareBtn = document.getElementById('share-btn');
+    const toastEl = document.getElementById('share-toast');
+    let toastTimer = null;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+    }
+
+    async function doShare() {
+      if (!currentMot) return;
+      const tr = document.getElementById('ess-title').textContent || currentMot;
+      const url = location.origin + location.pathname + '#' + encodeURIComponent(currentMot);
+      const title = `Intraduire · ${tr}`;
+      const text = `« ${tr} » sur Intraduire`;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, text, url });
+          return;
+        } catch (e) {
+          if (e && e.name === 'AbortError') return;
+        }
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Lien copié');
+      } catch (e) {
+        // dernier recours : sélection manuelle
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = url;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          showToast('Lien copié');
+        } catch (_) {
+          showToast('Copie impossible');
+        }
+      }
+    }
+    shareBtn.addEventListener('click', doShare);
+
+    // ── Mode de saisie (arabe / français), persistant ──────────
+    const MODE_KEY = 'intraduire-mode';
+    let mode = 'ar';
+    try {
+      const stored = localStorage.getItem(MODE_KEY);
+      if (stored === 'fr' || stored === 'ar') mode = stored;
+    } catch (e) {}
+
+    const modeArBtn = document.getElementById('mode-ar');
+    const modeFrBtn = document.getElementById('mode-fr');
+
+    function applyMode(m) {
+      mode = (m === 'fr') ? 'fr' : 'ar';
+      try { localStorage.setItem(MODE_KEY, mode); } catch (e) {}
+      const isFr = mode === 'fr';
+      plume.setAttribute('data-mode', mode);
+      plume.dir = isFr ? 'ltr' : 'rtl';
+      plume.placeholder = isFr ? 'un mot français…' : 'اكتب كلمة…';
+      plume.setAttribute('aria-label', isFr ? 'Saisir un mot français' : 'Saisir un mot arabe');
+      modeArBtn.classList.toggle('active', !isFr);
+      modeFrBtn.classList.toggle('active', isFr);
+      modeArBtn.setAttribute('aria-selected', String(!isFr));
+      modeFrBtn.setAttribute('aria-selected', String(isFr));
+      hideErr();
+    }
+    modeArBtn.addEventListener('click', () => { applyMode('ar'); plume.focus(); });
+    modeFrBtn.addEventListener('click', () => { applyMode('fr'); plume.focus(); });
+    applyMode(mode);
+
+    function submitPlume() {
+      const v = plume.value;
+      if (mode === 'fr') chercherFr(v);
+      else startFlow(v);
+    }
+
+    // ── Recherche française (action=chercher_fr) ───────────────
+    async function chercherFr(terme) {
+      terme = (terme || '').trim();
+      if (!terme) { showErr('Tape un mot français.'); return; }
+      hideErr();
+
+      loaderAr.textContent = terme;
+      show('loading');
+      startPhrases();
+      const started = Date.now();
+
+      let list = null, error = null;
+      try {
+        const r = await fetch(`${GAS_URL}?action=chercher_fr&terme=${encodeURIComponent(terme)}`);
+        const d = await r.json();
+        if (!d.success) throw new Error(d.error || 'Erreur inconnue');
+        list = Array.isArray(d.data) ? d.data : [];
+      } catch (e) { error = e; }
+
+      stopPhrases();
+      const wait = Math.max(0, 700 - (Date.now() - started));
+      if (wait) await sleep(wait);
+
+      if (error) {
+        show('home');
+        showErr('Erreur : ' + error.message + '.');
+        return;
+      }
+      renderFr(terme, list);
+    }
+
+    function renderFr(terme, list) {
+      const eyebrow = document.getElementById('fr-eyebrow');
+      const frame = document.getElementById('fr-frame');
+      const ul = document.getElementById('fr-list');
+      const after = document.getElementById('fr-after');
+      eyebrow.textContent = `Intraduire · « ${terme} »`;
+      ul.innerHTML = '';
+      after.innerHTML = '';
+
+      if (!list.length) {
+        frame.innerHTML =
+          `<p class="fr-empty">« ${esc(terme)} » n'est pas encore indexé. Reviens dans quelque temps, ou propose ce mot via une suggestion.</p>`;
+        show('fr');
+        return;
+      }
+
+      if (list.length === 1) {
+        frame.innerHTML =
+          `<p class="fr-lede">Un mot arabe répond à <span class="fr-term">${esc(terme)}</span>.</p>`;
+      } else {
+        frame.innerHTML =
+          `<p class="fr-lede"><strong>${list.length}</strong> mots arabes écrasés sous <span class="fr-term">${esc(terme)}</span>.</p>`;
+      }
+
+      list.forEach((m, i) => {
+        const li = document.createElement('li');
+        li.className = 'fr-card';
+        li.setAttribute('role', 'button');
+        li.setAttribute('tabindex', '0');
+        li.setAttribute('aria-label', `Lire ${m.translitteration || m.mot}`);
+        const trad = m.traduction ? `<p class="fr-trad">${esc(m.traduction)}</p>` : '';
+        const sig = m.signature ? `<p class="fr-sig">${esc(m.signature)}</p>` : '';
+        const peri = m.periodisation ? `<span class="fr-peri">${esc(m.periodisation)}</span>` : '';
+        li.innerHTML =
+          `<div class="fr-head">
+             <span class="fr-num">${String(i + 1).padStart(2, '0')}</span>
+             <span class="fr-translit">${esc(m.translitteration || '')}</span>
+             <span class="fr-ar">${esc(m.mot || '')}</span>
+           </div>
+           ${trad}${sig}${peri}`;
+        const open = () => {
+          if (!m.mot) return;
+          applyMode('ar');
+          plume.value = m.mot;
+          startFlow(m.mot);
+        };
+        li.addEventListener('click', open);
+        li.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+        });
+        ul.appendChild(li);
+      });
+
+      if (list.length > 1) {
+        after.innerHTML =
+          `<p class="fr-contrast">Le français les rassemble. L'arabe les sépare.</p>`;
+      }
+
+      show('fr');
     }
 
     // ── Écouteurs ───────────────────────────────────────────────
     plume.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); startFlow(plume.value); }
+      if (e.key === 'Enter') { e.preventDefault(); submitPlume(); }
     });
-    document.getElementById('plume-go').addEventListener('click', () => startFlow(plume.value));
+    document.getElementById('plume-go').addEventListener('click', submitPlume);
 
     const backLink = document.getElementById('back-link');
     function goHome(e) {
@@ -1086,10 +1508,17 @@
       show('home');
       hideErr();
       plume.value = '';
+      clearHash();
       plume.focus();
     }
     backLink.addEventListener('click', goHome);
     backLink.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goHome(e); }
+    });
+
+    const frBack = document.getElementById('fr-back');
+    frBack.addEventListener('click', goHome);
+    frBack.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goHome(e); }
     });
 
@@ -1212,6 +1641,17 @@
 
     // ── Init ────────────────────────────────────────────────────
     chargerListe();
+
+    // Lien profond : si un mot est dans le hash, on l'ouvre direct.
+    const bootMot = readHash();
+    if (bootMot) startFlow(bootMot);
+
+    // Si l'utilisateur change le hash dans la barre d'adresse pendant la session
+    window.addEventListener('hashchange', () => {
+      const m = readHash();
+      if (m && m !== currentMot) startFlow(m);
+      else if (!m && !screens.home.classList.contains('active')) goHome();
+    });
   })();
 </script>
 
