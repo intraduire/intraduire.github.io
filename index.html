@@ -798,6 +798,29 @@
     text-wrap: balance;
   }
 
+  /* ── SOURCES (note de bas d'analyse) ─────────────────────────── */
+  .sources {
+    margin: 56px 0 0;
+    padding-top: 22px;
+    border-top: 1px dotted var(--rule);
+    font-family: "Newsreader", serif;
+    font-size: calc(13px * var(--fscale));
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .sources h3 {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  .sources p { margin: 0 0 6px; }
+  .sources strong { font-weight: 500; color: var(--ink-2); }
+  .sources em { font-style: italic; }
+
   /* ── Reveal animation (essai) ────────────────────────────────── */
 
   .reveal { opacity: 0; transform: translateY(8px); transition: opacity 520ms ease, transform 520ms ease; }
@@ -1254,6 +1277,14 @@
         <p class="closing-q">${esc(q)}</p>
       </aside>`;
     }
+    function sourcesHTML(s) {
+      const body = unesc(s).split(/\n+/).map(p => p.trim()).filter(Boolean)
+        .map(p => `<p>${mdBold(p)}</p>`).join('');
+      return `<aside class="sources reveal" aria-label="Sources">
+        <h3>Sources</h3>
+        ${body}
+      </aside>`;
+    }
 
     function buildEssay(data, mot) {
       const tr = data.translitteration || '';
@@ -1273,6 +1304,7 @@
       });
       if (data.signature && !hasAntonyme) parts.push(signatureHTML(data.signature));
       if (data.question && String(data.question).trim()) parts.push(closingHTML(data.question));
+      if (data.sources && String(data.sources).trim()) parts.push(sourcesHTML(data.sources));
 
       document.getElementById('ess-article').innerHTML = parts.join('');
     }
