@@ -1108,6 +1108,11 @@
     const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     const esc = (s) => String(s == null ? '' : s)
       .replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    // **gras** -> <strong>, appliqué APRÈS échappement (sûr contre l'injection).
+    const mdBold = (s) => esc(s).replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+    // Aperçu compact : retire le markdown et aplatit les sauts de ligne sur une seule ligne.
+    const plain = (s) => esc(String(s == null ? '' : s)
+      .replace(/\*\*/g, '').replace(/\s*\n+\s*/g, ' ').trim());
 
     let currentMot = '';        // mot arabe affiché (pour les suggestions)
     let suggestEnabled = false; // activé via le flag GAS action=config
@@ -1223,7 +1228,7 @@
     const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
     const paras = (txt) => String(txt).split(/\n+/).map(s => s.trim())
-      .filter(Boolean).map(s => `<p>${esc(s)}</p>`).join('');
+      .filter(Boolean).map(s => `<p>${mdBold(s)}</p>`).join('');
 
     function sectionHTML(roman, label, text) {
       return `<section class="section reveal">
@@ -1485,9 +1490,9 @@
         li.setAttribute('role', 'button');
         li.setAttribute('tabindex', '0');
         li.setAttribute('aria-label', `Lire ${m.translitteration || m.mot}`);
-        const trad = m.traduction ? `<p class="fr-trad">${esc(m.traduction)}</p>` : '';
+        const trad = m.traduction ? `<p class="fr-trad">${plain(m.traduction)}</p>` : '';
         const sig = m.signature ? `<p class="fr-sig">${esc(m.signature)}</p>` : '';
-        const peri = m.periodisation ? `<span class="fr-peri">${esc(m.periodisation)}</span>` : '';
+        const peri = m.periodisation ? `<span class="fr-peri">${plain(m.periodisation)}</span>` : '';
         li.innerHTML =
           `<div class="fr-head">
              <span class="fr-num">${String(i + 1).padStart(2, '0')}</span>
