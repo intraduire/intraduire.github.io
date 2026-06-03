@@ -800,13 +800,13 @@
 
   /* ── SOURCES (note de bas d'analyse) ─────────────────────────── */
   .sources {
-    margin: 56px 0 0;
-    padding-top: 22px;
+    margin: 64px 0 0;
+    padding-top: 26px;
     border-top: 1px dotted var(--rule);
     font-family: "Newsreader", serif;
-    font-size: calc(13px * var(--fscale));
-    line-height: 1.7;
-    color: var(--muted);
+    font-size: calc(14px * var(--fscale));
+    line-height: 1.65;
+    color: var(--ink-2);
   }
   .sources h3 {
     font-family: "JetBrains Mono", ui-monospace, monospace;
@@ -815,10 +815,25 @@
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--muted);
-    margin: 0 0 12px;
+    margin: 0 0 18px;
   }
-  .sources p { margin: 0 0 6px; }
-  .sources strong { font-weight: 500; color: var(--ink-2); }
+  .sources p { margin: 0 0 10px; }
+  .sources p:last-child { margin-bottom: 0; }
+  /* Lignes de référence : retrait pendant pour faire ressortir le label en début */
+  .sources p:has(> strong:first-child) {
+    padding-left: 1.4em;
+    text-indent: -1.4em;
+  }
+  /* Lignes sans label : note de synthèse, séparée et en italique muet */
+  .sources p:not(:has(> strong:first-child)) {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dotted var(--rule);
+    font-style: italic;
+    color: var(--muted);
+  }
+  .sources p:not(:has(> strong:first-child)) em { font-style: normal; }
+  .sources strong { font-weight: 500; color: var(--ink); }
   .sources em { font-style: italic; }
 
   /* ── Reveal animation (essai) ────────────────────────────────── */
@@ -1303,8 +1318,8 @@
         parts.push(sectionHTML(ROMAN[n - 1] || String(n), label, data[k]));
       });
       if (data.signature && !hasAntonyme) parts.push(signatureHTML(data.signature));
-      if (data.question && String(data.question).trim()) parts.push(closingHTML(data.question));
       if (data.sources && String(data.sources).trim()) parts.push(sourcesHTML(data.sources));
+      if (data.question && String(data.question).trim()) parts.push(closingHTML(data.question));
 
       document.getElementById('ess-article').innerHTML = parts.join('');
     }
