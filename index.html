@@ -1111,11 +1111,14 @@
     // Certaines fiches en cache stockent les sauts de ligne sous forme littérale
     // (backslash + n, deux caractères) au lieu d'un vrai LF. On normalise.
     const unesc = (s) => String(s == null ? '' : s).replace(/\\n/g, '\n');
-    // **gras** -> <strong>, appliqué APRÈS échappement (sûr contre l'injection).
-    const mdBold = (s) => esc(s).replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
-    // Aperçu compact : retire le markdown et aplatit les sauts de ligne sur une seule ligne.
+    // Rend **gras** -> <strong> et *italique* -> <em>, appliqué APRÈS échappement
+    // (sûr contre l'injection). Gras d'abord pour ne pas confondre ** et *.
+    const mdBold = (s) => esc(s)
+      .replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+    // Aperçu compact : retire tout markdown et aplatit les sauts de ligne sur une seule ligne.
     const plain = (s) => esc(unesc(s)
-      .replace(/\*\*/g, '').replace(/\s*\n+\s*/g, ' ').trim());
+      .replace(/\*+/g, '').replace(/\s*\n+\s*/g, ' ').trim());
 
     let currentMot = '';        // mot arabe affiché (pour les suggestions)
     let suggestEnabled = false; // activé via le flag GAS action=config
